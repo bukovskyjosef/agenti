@@ -14,6 +14,7 @@ Každý agent čte:
 
 | Dokument | Kdy jej číst |
 |---|---|
+| [`operating-model.md`](operating-model.md) | při pochopení celkového způsobu spolupráce rolí a handoffů |
 | [`governance.md`](governance.md) | při nejasnosti autority, rozhodování, konfliktu pravidel nebo scope |
 | [`roles.md`](roles.md) | vždy při převzetí role; načti relevantní sekci |
 | [`workflow.md`](workflow.md) | při zahájení nebo předání práce mezi rolemi |
