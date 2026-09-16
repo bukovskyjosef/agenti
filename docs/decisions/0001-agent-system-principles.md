@@ -2,6 +2,8 @@
 
 **Status:** Accepted
 
+> This ADR is a decision-history record. It explains the origin and rationale of the model but is not the current operational specification when a rule has a canonical owner in `docs/README.md`.
+
 ## Context
 
 Tento repozitář slouží jako referenční etalon pro způsob, jakým mají AI agenti pracovat v dalších projektech. Neobsahuje reálný aplikační produkt; produktem je samotný agentní systém, jeho governance, role, workflow a informační architektura.
@@ -31,3 +33,4 @@ Přijímají se následující základní principy:
 - Issue musí fungovat jako samostatný pracovní kontrakt.
 - Repo musí podporovat nezávislý handoff mezi agentními instancemi.
 - Duplicitní normativní informace jsou považované za strukturální problém.
+- Aktuální provozní význam jednotlivých principů vlastní příslušné kanonické dokumenty podle `docs/README.md`; tento ADR zůstává historií rozhodnutí.
