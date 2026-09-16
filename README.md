@@ -1,40 +1,38 @@
-# Agenti
+# agenti
 
-Referenční repozitář pro návrh a provoz agentního systému v softwarových projektech.
+Referenční repozitář pro návrh, řízení a kontrolu práce AI agentů v dalších projektech.
 
-Tento repozitář **neobsahuje reálný produkt**. Produktem je samotný způsob práce: pravidla, role, workflow, informační architektura a šablony, podle kterých mohou být řízeny další projekty s AI agenty.
+Tento repozitář **není reálný aplikační produkt**. Produktem je samotný způsob práce: governance, role, workflow, informační architektura a šablony, které mají být znovu použitelné v jiných repozitářích.
 
-## Základní princip
+## Základní principy
 
-Projekt musí být pochopitelný a zpracovatelný agentem, který přichází bez kontextu z předchozí konverzace. Vše potřebné pro práci musí být dohledatelné v GitHub prostoru daného repozitáře.
+- GitHub prostor projektu je jediným zdrojem pravdy.
+- Nový agent musí být schopen začít práci bez neveřejného kontextu z předchozího chatu.
+- Práce se eviduje v GitHub Issues.
+- Každý agent pracuje v explicitní roli a nepřekračuje její kompetence.
+- Agenti se vzájemně kontrolují, ale nekonkurují si a neopravují oportunisticky práci jiných rolí.
+- Produktová a governance rozhodnutí dělá Human / Product Owner.
+- Normativní informace má mít jedno kanonické místo.
+- Scope práce se připravuje tak, aby realizace nevznikala z domněnek.
+- Kontext se načítá cíleně; cílem je nejmenší úplný kontext, ne co největší množství dokumentace.
+- Dokončení práce se posuzuje podle typu výsledku; kontrolní práce nevytváří automaticky nekonečný řetězec dalších kontrol.
 
-- `main` obsahuje aktuální autoritativní stav.
-- Trvalé znalosti, pravidla a rozhodnutí patří do verzovaných souborů repozitáře.
-- Pracovní úkoly a jejich stav patří do GitHub Issues.
-- Změny se připravují v branchech a Pull Requests.
-- Chat, osobní paměť agenta ani externí poznámky nejsou zdrojem pravdy.
-- Produktová rozhodnutí dělá člověk.
-- Agenti pracují v explicitních rolích a nepřekračují své kompetence.
-- Každá informace má jedno kanonické místo; ostatní dokumenty na ni pouze odkazují.
-- Kontext se načítá cíleně, ne plošně, aby agent spotřeboval minimum tokenů potřebných pro kvalitní práci.
+## Pro agenty
 
-## Kde začít
+Začni v [`AGENTS.md`](AGENTS.md). Ten je krátkým routerem do relevantních kanonických pravidel.
 
-Agent vždy začíná v [`AGENTS.md`](AGENTS.md).
+## Pro člověka
 
-Detailní normativní pravidla jsou v [`docs/`](docs/README.md).
+Normativní dokumentace je mapována v [`docs/README.md`](docs/README.md). Významná rozhodnutí a jejich historie patří do `docs/decisions/`, zatímco konkrétní práce a aktuální rozhodovací fronta jsou evidované v GitHub Issues.
 
-## Co tento repozitář definuje
+## Účel použití
 
-1. autoritu člověka a agentů,
-2. role a jejich kompetence,
-3. životní cyklus úkolu,
-4. standard kvalitního GitHub Issue,
-5. model nezávislé kontroly práce,
-6. pravidla práce s kontextem a tokeny,
-7. informační architekturu repozitáře,
-8. způsob přenosu tohoto modelu do dalších projektů.
+Tento repozitář má sloužit jako:
 
-## Status
+- etalon pro nové projekty,
+- zdroj best practices pro agentní práci,
+- výchozí governance model,
+- testovací prostředí pro zlepšování spolupráce více agentních rolí,
+- návod, jak udržet předání práce mezi agentními instancemi deterministické a levné na kontext.
 
-Repozitář je budován jako živý etalon. Změny jeho governance jsou produktovými změnami tohoto repozitáře a podléhají lidskému rozhodnutí.
+Při přebírání modelu do konkrétního projektu se kopírují principy a odpovědnosti, ne nutně každý soubor beze změny. Praktický postup popisuje [`docs/adoption-guide.md`](docs/adoption-guide.md).
