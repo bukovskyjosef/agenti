@@ -10,9 +10,11 @@ Vstupem může být lidský požadavek, nalezený problém nebo návrh změny.
 
 Orchestrátor nebo analytik zajistí, aby vzniklo GitHub Issue. Práce nesmí dlouhodobě existovat pouze v chatu.
 
+Work item vzniká ve stavu **Intake** a může být záměrně neúplný. Stejné Issue se dále dopracovává; nevytváří se nové Issue jen kvůli přechodu mezi Intake, Analysis a Ready.
+
 ## 2. Analysis
 
-Analytik připraví issue tak, aby bylo jednoznačné:
+Při zahájení skutečného dopracování se stav work itemu změní na **Analysis**. Analytik v témže Issue připraví pracovní kontrakt tak, aby bylo jednoznačné:
 
 - proč se práce dělá,
 - co je cílem,
@@ -20,6 +22,7 @@ Analytik připraví issue tak, aby bylo jednoznačné:
 - co je explicitně mimo scope,
 - jaké kanonické zdroje se použijí,
 - jaká pravidla a omezení platí,
+- jaké jsou závislosti,
 - jak se pozná dokončení,
 - jaké otázky vyžadují lidské rozhodnutí.
 
@@ -41,13 +44,15 @@ Decision artefakt po rozhodnutí zůstává auditní stopou. Aktuální trvalé 
 
 ## 3. Ready
 
-Issue je Ready pouze tehdy, pokud splňuje [`issue-standard.md`](issue-standard.md).
+Stejné Issue se označí jako **Ready** teprve po splnění kompletní Definition of Ready v [`issue-standard.md`](issue-standard.md).
 
-Ready znamená, že nová kompetentní instance agenta může začít pracovat pouze z repozitáře a issue bez doplňujícího kontextu z chatu.
+Před přechodem do Ready musí být doplněný kompletní pracovní kontrakt relevantní pro daný typ práce a readiness checklist musí odpovídat skutečnému stavu. Ready není implicitní důsledek založení Issue ani dokončení části analýzy.
+
+Ready znamená, že nová kompetentní instance agenta může začít pracovat pouze z repozitáře a Issue bez doplňujícího kontextu z chatu.
 
 ## 4. Assignment
 
-Orchestrátor určí vykonávající roli a zkontroluje závislosti. Jedno issue má mít jednoznačného vlastníka práce v dané fázi.
+Orchestrátor určí vykonávající roli a zkontroluje závislosti. Jedno Issue má mít jednoznačného vlastníka práce v dané fázi.
 
 ## 5. Implementation / execution
 
@@ -55,7 +60,7 @@ Pokud Issue vyžaduje implementaci nebo jinou vykonávající změnu, přísluš
 
 1. načte povinný kontext,
 2. ověří scope,
-3. provede pouze změny potřebné pro issue,
+3. provede pouze změny potřebné pro Issue,
 4. průběžně ověřuje výsledek,
 5. zaznamená nové nálezy mimo scope bez jejich oportunistické opravy,
 6. vytvoří odpovídající auditní stopu změny podle pravidel projektu.
@@ -82,6 +87,6 @@ Issue lze uzavřít pouze podle typově specifických completion pravidel v [`is
 
 ## 9. Handoff contract
 
-Při předání mezi rolemi se nepřenáší soukromý kontext agenta. Předává se pouze stav zachycený v repozitáři, issue a PR.
+Při předání mezi rolemi se nepřenáší soukromý kontext agenta. Předává se pouze stav zachycený v repozitáři, Issue a PR.
 
 Dobré předání musí umožnit následující roli pokračovat bez dotazu typu „co jste vlastně předtím řešili?“.
