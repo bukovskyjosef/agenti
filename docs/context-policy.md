@@ -22,7 +22,7 @@ Pokud je k pochopení úkolu nutné prohledat celý projekt bez vodítka, je to 
 
 ## 3. Canonical information
 
-Jedna skutečnost má mít jedno autoritativní místo. Ostatní soubory mají používat odkazy místo kopírování.
+Jedna skutečnost nebo rodina pravidel má mít jedno autoritativní místo. Mapu kanonických vlastníků normativních pravidel určuje [`docs/README.md`](README.md). Ostatní soubory mají používat odkazy nebo pouze orientační shrnutí místo nezávislého kopírování pravidla.
 
 Důvody:
 
@@ -51,4 +51,6 @@ Při pochybnosti má před dalším širokým načítáním formulovat konkrétn
 
 ## 6. Shrnutí není nový zdroj pravdy
 
-Agent může vytvořit pracovní shrnutí pro efektivitu, ale shrnutí nesmí začít konkurovat původnímu kanonickému zdroji. Pokud shrnutí obsahuje novou trvalou skutečnost, musí být tato skutečnost zapsána na správné kanonické místo.
+Agent může vytvořit pracovní nebo entrypoint shrnutí pro efektivitu, ale shrnutí nesmí začít konkurovat původnímu kanonickému zdroji. Pokud shrnutí obsahuje novou trvalou skutečnost, musí být tato skutečnost zapsána na správné kanonické místo.
+
+Rozhodovací záznam nebo ADR může uchovat kontext a důvod přijatého rozhodnutí, ale aktuální provozní pravidlo po propsání rozhodnutí vlastní příslušný kanonický normativní dokument.
