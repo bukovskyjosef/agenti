@@ -1,6 +1,6 @@
 # Normative documentation map
 
-Tento adresář obsahuje autoritativní pravidla agentního systému. Každé pravidlo má mít jedno kanonické místo.
+Tento adresář obsahuje autoritativní pravidla agentního systému. Každá rodina pravidel má jedno kanonické místo. Ostatní dokumenty ji mohou pouze stručně shrnout pro orientaci a odkázat na jejího vlastníka; shrnutí není druhou normativní definicí.
 
 ## Povinné minimum pro každého agenta
 
@@ -9,6 +9,24 @@ Každý agent čte:
 1. `/AGENTS.md`,
 2. své GitHub Issue,
 3. níže uvedený dokument pro svoji roli nebo fázi práce.
+
+`AGENTS.md` je povinný provozní router. Jeho stručná připomenutí pravidel jsou orientační; kanonickým vlastníkem detailního pravidla je dokument uvedený v mapě níže.
+
+## Kanoničtí vlastníci pravidel
+
+| Rodina pravidel | Kanonický vlastník |
+|---|---|
+| celkový model spolupráce a handoffů | [`operating-model.md`](operating-model.md) |
+| autorita, rozhodování, konflikty a produktová autonomie | [`governance.md`](governance.md) |
+| role, kompetence a jejich hranice | [`roles.md`](roles.md) |
+| životní cyklus práce a předávání mezi fázemi | [`workflow.md`](workflow.md) |
+| Issue kontrakt, Intake/Analysis/Ready, DoR, completion a control-gate deklarace | [`issue-standard.md`](issue-standard.md) |
+| nezávislé review a práce s review nálezy | [`review-model.md`](review-model.md) |
+| načítání, persistence a minimalizace kontextu | [`context-policy.md`](context-policy.md) |
+| informační architektura a umístění artefaktů | [`repository-structure.md`](repository-structure.md) |
+| zavedení modelu do jiného repozitáře | [`adoption-guide.md`](adoption-guide.md) |
+
+Pokud by dvě místa odpovídala na stejnou normativní otázku, platí vlastník uvedený v této mapě a duplicitní formulace se má změnit na odkaz nebo orientační shrnutí.
 
 ## Kontext podle potřeby
 
@@ -26,12 +44,13 @@ Každý agent čte:
 
 ## Pravidlo proti duplicitám
 
-Pokud informace již existuje v jednom z těchto dokumentů, jiný dokument ji nesmí znovu normativně definovat. Může pouze stručně vysvětlit kontext a odkázat na kanonické místo.
+Pokud normativní informace již existuje u svého kanonického vlastníka, jiný dokument ji nesmí znovu nezávisle definovat. Může ji stručně připomenout pouze pro routing nebo lokální srozumitelnost, musí však zachovat stejný význam a odkázat na kanonického vlastníka.
 
 ## Typy informací
 
-- **Normativní pravidla:** `docs/*.md` a kořenový `AGENTS.md`.
-- **Produktová a governance rozhodnutí:** `docs/decisions/`.
+- **Aktuální normativní pravidla:** příslušné kanonické dokumenty `docs/*.md` podle mapy výše.
+- **Agentní a lidské entrypointy:** `AGENTS.md` a kořenový `README.md`; orientují a odkazují, ale nevytvářejí paralelní vlastnictví detailních pravidel.
+- **Rozhodovací záznamy:** `docs/decisions/` a GitHub decision artefakty; uchovávají kontext, rozhodnutí a auditní historii, ale po propsání nenahrazují aktuální provozní specifikaci.
 - **Pracovní úkoly:** GitHub Issues.
 - **Návrhy změn a jejich diskuse:** branches a Pull Requests.
 - **Historické nebo pomocné materiály:** pouze pokud jsou jasně označené jako neautoritativní.
