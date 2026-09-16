@@ -54,18 +54,62 @@ Issue je Ready pouze pokud současně platí:
 
 Pokud některá podmínka neplatí, agent nemá nejasnost hádat. Issue se vrací do analýzy.
 
-## Definition of Done
+## Completion semantics
 
-Issue je Done pouze pokud:
+Dokončení se určuje podle **typu výsledku práce**, nikoli jednotným pravidlem pro všechna Issues. Jedno Issue může kombinovat více typů výsledku; v takovém případě musí splnit podmínky všech relevantních typů.
 
-- změna splňuje acceptance criteria,
-- bylo provedeno předepsané ověření,
-- nezávislé review je uzavřené,
-- případné požadované testování je úspěšné,
-- relevantní dokumentace odpovídá novému stavu,
-- všechny změny jsou uvnitř scope nebo mají explicitní schválení,
-- nové nesouvisející nálezy jsou odděleně evidované,
-- issue nebo PR obsahuje dostatečný důkaz o dokončení.
+### Společné podmínky dokončení
+
+Každé dokončené Issue musí mít:
+
+- splněný cíl a relevantní acceptance criteria,
+- provedené ověření předepsané pracovním kontraktem,
+- změny uvnitř schváleného scope,
+- relevantní kanonickou dokumentaci v souladu s výsledným stavem,
+- nesouvisející nové nálezy odděleně zaznamenané,
+- dostatečný důkaz o výsledku a handoff pro další roli.
+
+### Implementace nebo změna produktu / normativního stavu
+
+Pokud výsledkem práce je změna kódu, konfigurace, dat, šablon nebo kanonické normativní dokumentace:
+
+- musí být splněné všechny kontrolní brány předepsané pro daný work item,
+- autor změny nesmí být jejím nezávislým reviewerem,
+- blocking nálezy z požadovaných kontrol musí být vyřešené před dokončením.
+
+Konkrétní pravidlo pro výběr review/testovacích bran je samostatná governance otázka; dokud není kanonicky určeno, work item musí požadované brány deklarovat explicitně.
+
+### Analýza
+
+Analytické Issue je dokončené, pokud je hotový jeho analytický výstup, jsou splněná jeho acceptance criteria, nejasnosti jsou buď vyřešené, nebo explicitně eskalované správnému rozhodovateli, a další práce je předaná přes GitHub artefakty. Samotná skutečnost, že jde o Issue, nevytváří další povinné nezávislé review.
+
+### Review nebo audit
+
+Review/audit Issue je dokončené podle pravidel `review-model.md`: reviewer zaznamenal závěr a důkazy, blocking nálezy jsou vypořádané způsobem vyžadovaným daným review a follow-up práce je evidovaná tam, kde je potřeba.
+
+Review nebo audit **nevyžaduje další review pouze proto, že jeho výsledkem je review**. Další nezávislá kontrola se provádí jen tehdy, pokud ji výslovně požaduje pracovní kontrakt nebo jiné platné pravidlo.
+
+### Testování nebo verifikace
+
+Testovací/verifikační Issue je dokončené, pokud bylo provedeno předepsané ověření, existují doložitelné výsledky a nalezené defekty nebo blokace byly předány správné roli. Další review testu není automaticky vyžadováno, pokud není explicitně předepsané.
+
+### Orchestrace a handoff
+
+Orchestrační Issue je dokončené, pokud byly provedeny jeho routingové, závislostní a handoff povinnosti, stav je zachycen v GitHubu a navazující práce má jednoznačné vlastníky nebo blokace. Samotná orchestrace automaticky nevyžaduje další nezávislé review.
+
+### Rozhodovací liaison / Asistentka
+
+Pokud je výsledkem pouze zpracování rozhodovací fronty a záznam lidského rozhodnutí, práce končí po úplném záznamu a handoffu. Pokud Asistentka přímo mění kanonický normativní artefakt, tato část práce je současně **změnovým** výsledkem a vztahují se na ni i podmínky pro implementaci nebo změnu.
+
+## Procesní výjimky
+
+Bootstrap nebo jiná odchylka od běžného procesu nesmí být dovozena zpětně. Musí být explicitně zaznamenaná v příslušném Issue nebo decision artefaktu, včetně:
+
+- které běžné pravidlo nebo kontrolní brána se nepoužije,
+- proč je výjimka nutná,
+- kdo ji schválil, pokud zasahuje do product/governance pravidel.
+
+Výjimka platí pouze pro uvedený případ a nevytváří nový obecný precedent.
 
 ## Pravidla kvality zadání
 
