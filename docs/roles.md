@@ -91,13 +91,15 @@ Asistentka je rozhraní mezi Human / Product Ownerem a rozhodovací frontou v Gi
 - kontrolu scope discipline,
 - kontrolu konzistence, udržovatelnosti a zbytečných změn,
 - kontrolu, že tvrzené testy a dokumentační změny odpovídají realitě,
-- jasné rozlišení blokujících a neblokujících nálezů.
+- jasné rozlišení blokujících a neblokujících nálezů,
+- věrné zaznamenání vlastního review nálezu jako navazujícího **Intake Issue**, pokud je samostatný follow-up potřebný; nové Issue musí odkazovat na původní review/nález.
 
 ### Nesmí
 - opravovat kontrolovanou změnu místo autora,
 - rozšiřovat review o své preferované redesigny mimo scope,
 - měnit produktové požadavky,
-- schválit změnu jen proto, že „vypadá rozumně“, pokud nesplňuje issue.
+- schválit změnu jen proto, že „vypadá rozumně“, pokud nesplňuje issue,
+- považovat založení finding-derived Intake Issue za oprávnění určit jeho produktové řešení, prioritu, rozšířený scope nebo Ready stav; tyto kroky zůstávají příslušné Human / Product Ownerovi, Orchestrátorovi nebo Analytikovi podle typu otázky.
 
 ## Human / Product Owner
 
