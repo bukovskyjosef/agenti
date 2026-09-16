@@ -83,6 +83,12 @@ body:
         - Reviewer
 
   - type: textarea
+    id: gates
+    attributes:
+      label: Required control gates
+      description: Required before Ready. Explicitly state the control gates required by docs/issue-standard.md, for example Independent Review; Independent Review + Test/Verification; explicitly permitted combined Review + Verification; or None for a work type that requires no additional gate.
+
+  - type: textarea
     id: validation
     attributes:
       label: Validation
@@ -108,4 +114,5 @@ body:
         - label: Relevant canonical references are listed.
         - label: Dependencies are satisfied or clearly declared.
         - label: Responsible role is known.
+        - label: Required control gates are explicitly declared.
         - label: A new competent agent can start from this issue and the repository without external chat context.
