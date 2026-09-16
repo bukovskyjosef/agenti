@@ -1,12 +1,21 @@
 name: Work item
-description: Define a task so an agent can execute it without external chat context.
+description: Capture work in Intake and refine the same issue through Analysis to Ready.
 title: "[TASK] "
 body:
+  - type: input
+    id: lifecycle
+    attributes:
+      label: Lifecycle state
+      description: New work starts as Intake. Change this field in the issue body to Analysis and later Ready only according to docs/issue-standard.md.
+      value: Intake
+    validations:
+      required: true
+
   - type: textarea
     id: goal
     attributes:
       label: Goal
-      description: What observable result must be achieved?
+      description: What result is being requested? Intake may be incomplete, but the goal must be identifiable.
     validations:
       required: true
 
@@ -14,7 +23,7 @@ body:
     id: context
     attributes:
       label: Context
-      description: Only context needed to understand the task. Link canonical sources instead of copying them.
+      description: Minimum context needed to understand why this work exists. Link canonical sources instead of copying them.
     validations:
       required: true
 
@@ -22,52 +31,49 @@ body:
     id: scope
     attributes:
       label: Scope
-      description: What is explicitly part of this task?
-    validations:
-      required: true
+      description: Required before Ready. What is explicitly part of this task?
 
   - type: textarea
     id: out_of_scope
     attributes:
       label: Out of scope
-      description: What must not be changed as part of this task?
-    validations:
-      required: true
+      description: Required before Ready. What must not be changed as part of this task?
 
   - type: textarea
     id: requirements
     attributes:
       label: Requirements
-      description: Normative requirements or links to their canonical locations.
-    validations:
-      required: true
+      description: Required before Ready where applicable. Normative requirements or links to their canonical locations.
 
   - type: textarea
     id: acceptance
     attributes:
       label: Acceptance criteria
-      description: Observable and testable completion conditions.
-    validations:
-      required: true
+      description: Required before Ready. Observable and testable completion conditions.
 
   - type: textarea
     id: constraints
     attributes:
       label: Constraints
-      description: Relevant technical, security, compatibility or process constraints.
+      description: Required before Ready for implementation/change work. State relevant constraints or explicitly state that there are none.
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: Required before Ready. List dependencies and their state, or explicitly state that there are no blocking dependencies.
 
   - type: textarea
     id: references
     attributes:
       label: Canonical references
-      description: Files, decisions, issues or contracts authoritative for this task.
-    validations:
-      required: true
+      description: Required before Ready. Files, decisions, issues or contracts authoritative for this task.
 
   - type: dropdown
     id: role
     attributes:
       label: Responsible role
+      description: Must be selected before Ready. It may remain unset during early Intake/Analysis.
       options:
         - Orchestrator
         - Analyst
@@ -75,35 +81,31 @@ body:
         - Developer
         - Tester
         - Reviewer
-    validations:
-      required: true
 
   - type: textarea
     id: validation
     attributes:
       label: Validation
-      description: How must the result be verified?
-    validations:
-      required: true
+      description: Required before Ready. How must the result be verified?
 
   - type: textarea
     id: documentation
     attributes:
       label: Documentation impact
-      description: Which canonical documents must change, or why no documentation update is needed.
-    validations:
-      required: true
+      description: Required before Ready where applicable. Which canonical documents must change, or why no documentation update is needed.
 
   - type: checkboxes
     id: ready
     attributes:
-      label: Definition of Ready
+      label: Ready checklist
+      description: Leave incomplete during Intake/Analysis. Before changing Lifecycle state to Ready, every applicable condition from docs/issue-standard.md must be satisfied; this checklist is operational, while the document remains canonical.
       options:
-        - label: No unresolved product decision is required before this work can start.
-          required: true
+        - label: Goal is unambiguous.
         - label: Scope and out-of-scope are explicit.
-          required: true
+        - label: No unresolved product decision is required before this work can start.
         - label: Acceptance criteria are testable.
-          required: true
+        - label: All mandatory contract sections relevant to this work are complete, including Constraints for implementation/change work.
+        - label: Relevant canonical references are listed.
+        - label: Dependencies are satisfied or clearly declared.
+        - label: Responsible role is known.
         - label: A new competent agent can start from this issue and the repository without external chat context.
-          required: true
