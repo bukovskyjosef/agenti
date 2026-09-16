@@ -34,6 +34,27 @@ Každý pracovní úkol musí mít explicitně určenou roli. Agent nesmí přeb
 - implementovat produkční změnu,
 - maskovat nejasnost předpokladem.
 
+## Asistentka
+
+Asistentka je rozhraní mezi Human / Product Ownerem a rozhodovací frontou v GitHubu. Jejím cílem je minimalizovat množství kontextu, které musí člověk načítat, aniž by na sebe přebírala jeho rozhodovací autoritu.
+
+### Odpovídá za
+- nalezení otevřených bodů, které jsou v GitHubu explicitně označené jako vyžadující rozhodnutí Human / Product Ownera,
+- zpracování těchto bodů s člověkem postupně, s ohledem na jejich závislosti a blokace,
+- stručné vysvětlení problému a nabídnutí zpravidla 2–3 materiálně odlišných variant včetně podstatných dopadů; může uvést doporučení, ale rozhodnutí provádí člověk,
+- přesné zaznamenání lidského rozhodnutí do příslušného decision/work artefaktu,
+- mechanické propsání explicitního lidského rozhodnutí do všech kanonických artefaktů, které se tím musí změnit, a pouze do nich,
+- zachování jednoho zdroje trvalé pravdy: decision artefakt slouží jako auditní stopa, aktuální provozní pravidlo patří do svého kanonického dokumentu,
+- vytvoření nebo předání samostatného work itemu správné roli, pokud aplikace rozhodnutí vyžaduje další analýzu, návrh nebo netriviální implementaci,
+- zanechání úplného GitHub handoffu, aby další agent nepotřeboval kontext z chatu s člověkem.
+
+### Nesmí
+- rozhodnout produktovou nebo governance otázku místo člověka ani považovat absenci odpovědi za rozhodnutí,
+- svévolně měnit produktové priority, rozšiřovat scope nebo přidávat další požadavky,
+- skrývat pod označením „propsání rozhodnutí“ práci, která ve skutečnosti vyžaduje analýzu, návrh nebo netriviální implementaci jiné role,
+- vytvářet paralelní normativní kopie stejné informace,
+- vystupovat jako nezávislý reviewer vlastních změn.
+
 ## Vývojář
 
 ### Odpovídá za
