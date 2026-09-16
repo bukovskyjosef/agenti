@@ -1,10 +1,20 @@
 # GitHub Issue standard
 
-GitHub Issue je pracovní kontrakt konkrétního úkolu. Musí být dostatečně přesné, aby kompetentní agent mohl začít bez kontextu z externího chatu.
+GitHub Issue je pracovní kontrakt konkrétního úkolu. Musí být dostatečně přesné, aby kompetentní agent mohl začít bez kontextu z externího chatu ve chvíli, kdy je označeno jako Ready.
 
-## Povinný obsah
+## Lifecycle state
 
-Každé implementační nebo změnové issue musí obsahovat:
+Jeden work item se průběžně vyvíjí ve stejném GitHub Issue. Jeho aktuální stav musí být v Issue explicitně uveden jako:
+
+- **Intake** — požadavek je zachycený, ale nemusí ještě splňovat kompletní pracovní kontrakt; pro vznik Issue stačí jednoznačně zachytit alespoň Goal a nezbytný Context,
+- **Analysis** — Issue se dopracovává, řeší se scope, nejasnosti, rozhodnutí, závislosti a podmínky dokončení,
+- **Ready** — Issue splňuje kompletní pracovní kontrakt a Definition of Ready níže a může být předáno vykonávající roli.
+
+Přechod do Ready je explicitní změna stavu téhož Issue, nikoli vznik nového Issue. Stav Ready nesmí být nastaven, pokud není splněná celá Definition of Ready.
+
+## Povinný obsah před Ready
+
+Každé implementační nebo změnové Issue musí před označením jako Ready obsahovat:
 
 ### Goal
 Jedna jasná formulace výsledku, kterého má být dosaženo.
@@ -19,16 +29,19 @@ Explicitní seznam toho, co do úkolu patří.
 Explicitní hranice práce. Slouží proti oportunistickému rozšiřování změny.
 
 ### Requirements
-Normativní požadavky, které musí řešení splnit. Pokud již existují jinde, issue na ně odkazuje a neduplikuje je.
+Normativní požadavky, které musí řešení splnit. Pokud již existují jinde, Issue na ně odkazuje a neduplikuje je.
 
 ### Acceptance criteria
 Pozorovatelné a testovatelné podmínky dokončení. Nemají popisovat preferovanou implementaci, pokud implementační způsob není součástí požadavku.
 
 ### Constraints
-Technická, bezpečnostní, kompatibilitní nebo procesní omezení relevantní pro úkol.
+Technická, bezpečnostní, kompatibilitní nebo procesní omezení relevantní pro úkol. Pokud žádná zvláštní omezení nejsou, musí to Issue explicitně uvést.
+
+### Dependencies
+Závislosti, které musí být splněné, nebo explicitní konstatování, že žádné blokující závislosti nejsou.
 
 ### Canonical references
-Konkrétní dokumenty, rozhodnutí, soubory nebo předchozí issues, které jsou autoritativní pro tuto práci.
+Konkrétní dokumenty, rozhodnutí, soubory nebo předchozí Issues, které jsou autoritativní pro tuto práci.
 
 ### Responsible role
 Role, která má provést aktuální fázi práce.
@@ -45,14 +58,17 @@ Issue je Ready pouze pokud současně platí:
 
 - cíl je jednoznačný,
 - scope a out-of-scope jsou jasné,
-- neexistuje nevyřešená produktová otázka nutná k implementaci,
+- neexistuje nevyřešená produktová otázka nutná k provedení práce,
 - acceptance criteria jsou testovatelná,
+- povinné části pracovního kontraktu relevantní pro daný typ práce jsou doplněné,
 - jsou uvedené relevantní kanonické zdroje,
 - závislosti jsou splněné nebo jasně deklarované,
 - je známá odpovědná role,
 - agent nepotřebuje neveřejný kontext z předchozí konverzace.
 
-Pokud některá podmínka neplatí, agent nemá nejasnost hádat. Issue se vrací do analýzy.
+Readiness checklist v Issue šabloně je pouze provozní kontrola těchto podmínek; kanonickou definicí zůstává tento dokument.
+
+Pokud některá podmínka neplatí, stav Issue nesmí být Ready. Issue zůstává v Intake nebo Analysis podle aktuální fáze.
 
 ## Completion semantics
 
@@ -114,7 +130,7 @@ Výjimka platí pouze pro uvedený případ a nevytváří nový obecný precede
 ## Pravidla kvality zadání
 
 - Nepoužívej vágní formulace typu „oprav“, „dolaď“, „udělej správně“ bez definice výsledku.
-- Nevkládej do issue celý obsah dokumentace, pokud stačí odkaz.
+- Nevkládej do Issue celý obsah dokumentace, pokud stačí odkaz.
 - Nevynucuj implementační detail bez důvodu.
-- Pokud existuje více produktově odlišných variant, issue není Ready, dokud člověk variantu nevybere.
-- Nález mimo scope se nestává součástí issue jen proto, že je poblíž měněného kódu.
+- Pokud existuje více produktově odlišných variant, Issue není Ready, dokud člověk variantu nevybere.
+- Nález mimo scope se nestává součástí Issue jen proto, že je poblíž měněného kódu.
