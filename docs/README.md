@@ -18,7 +18,7 @@ Každý agent čte:
 | [`governance.md`](governance.md) | při nejasnosti autority, rozhodování, konfliktu pravidel nebo scope |
 | [`roles.md`](roles.md) | vždy při převzetí role; načti relevantní sekci |
 | [`workflow.md`](workflow.md) | při zahájení nebo předání práce mezi rolemi |
-| [`issue-standard.md`](issue-standard.md) | analytik, orchestrátor a každý agent před zahájením práce |
+| [`issue-standard.md`](issue-standard.md) | analytik, orchestrátor a každý agent před zahájením práce; vlastní Definition of Ready a typově specifická completion pravidla |
 | [`review-model.md`](review-model.md) | developer, tester, reviewer a orchestrátor při kontrole změny |
 | [`context-policy.md`](context-policy.md) | při práci s větším repozitářem nebo při hledání kontextu |
 | [`repository-structure.md`](repository-structure.md) | při zakládání nebo reorganizaci projektu |
