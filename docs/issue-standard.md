@@ -46,6 +46,9 @@ Konkrétní dokumenty, rozhodnutí, soubory nebo předchozí Issues, které jsou
 ### Responsible role
 Role, která má provést aktuální fázi práce.
 
+### Required control gates
+Kontrolní brány, které musí proběhnout před dokončením work itemu. Volba musí být explicitní; nesmí být ponechána až na interpretační rozhodnutí vykonávajícího agenta.
+
 ### Validation
 Jakým způsobem má být výsledek ověřen.
 
@@ -64,11 +67,27 @@ Issue je Ready pouze pokud současně platí:
 - jsou uvedené relevantní kanonické zdroje,
 - závislosti jsou splněné nebo jasně deklarované,
 - je známá odpovědná role,
+- požadované kontrolní brány jsou explicitně deklarované,
 - agent nepotřebuje neveřejný kontext z předchozí konverzace.
 
 Readiness checklist v Issue šabloně je pouze provozní kontrola těchto podmínek; kanonickou definicí zůstává tento dokument.
 
 Pokud některá podmínka neplatí, stav Issue nesmí být Ready. Issue zůstává v Intake nebo Analysis podle aktuální fáze.
+
+## Control gate selection
+
+Reference model nepoužívá univerzální risk skóre ani pevnou doménovou tabulku změn. Požadované kontrolní brány se určují během Analysis/Ready přípravy **pro konkrétní work item** a jsou součástí jeho pracovního kontraktu.
+
+Platí minimální invarianty:
+
+- každý Ready work item musí explicitně uvést své `Required control gates`,
+- každá implementace nebo změna kódu, konfigurace, dat, šablon nebo kanonické normativní dokumentace vyžaduje alespoň **nezávislé Review**,
+- samostatné **Test / Verification** není univerzálně povinné; pokud je pro konkrétní work item požadováno, musí být uvedeno v jeho pracovním kontraktu,
+- pokud má jedna nezávislá kontrolní instance spojit Reviewer a Tester/Verification funkci, musí to work item explicitně povolit; autor změny touto nezávislou kontrolní instancí být nesmí,
+- u analytické, review/auditní, testovací, orchestrační nebo čistě rozhodovací práce mohou být control gates `None`, pokud její typově specifická completion pravidla další bránu nevyžadují,
+- kontrolní brána nesmí být po přechodu do Ready vypuštěna jen kvůli rychlosti; změna gate kontraktu vyžaduje návrat do odpovídající fáze a explicitní aktualizaci Issue.
+
+Adoptující repozitář smí definovat přísnější projektové defaulty nebo povinné testovací brány, nesmí však oslabit explicitní gate kontrakt konkrétního Ready work itemu bez zaznamenané změny jeho zadání.
 
 ## Completion semantics
 
@@ -93,7 +112,7 @@ Pokud výsledkem práce je změna kódu, konfigurace, dat, šablon nebo kanonick
 - autor změny nesmí být jejím nezávislým reviewerem,
 - blocking nálezy z požadovaných kontrol musí být vyřešené před dokončením.
 
-Konkrétní pravidlo pro výběr review/testovacích bran je samostatná governance otázka; dokud není kanonicky určeno, work item musí požadované brány deklarovat explicitně.
+Výběr bran se řídí sekcí `Control gate selection` výše a konkrétním pracovním kontraktem.
 
 ### Analýza
 
