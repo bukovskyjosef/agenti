@@ -20,7 +20,6 @@ Tento soubor je povinný vstupní bod pro každého agenta pracujícího v repoz
 - Neduplicuj kanonické informace. Odkazuj na ně.
 - Načítej minimum kontextu potřebného pro úkol.
 - Každá změna musí být dohledatelná k issue a ověřitelná proti acceptance criteria.
-- Dokončení určuj podle typu výsledku práce a pravidel v [`docs/issue-standard.md`](docs/issue-standard.md); review nebo test nevytváří automaticky nekonečný řetězec dalších review.
 
 ## 3. Standardní workflow
 
