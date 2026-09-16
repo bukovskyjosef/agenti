@@ -46,7 +46,7 @@ Decision artefakt po rozhodnutí zůstává auditní stopou. Aktuální trvalé 
 
 Stejné Issue se označí jako **Ready** teprve po splnění kompletní Definition of Ready v [`issue-standard.md`](issue-standard.md).
 
-Před přechodem do Ready musí být doplněný kompletní pracovní kontrakt relevantní pro daný typ práce a readiness checklist musí odpovídat skutečnému stavu. Ready není implicitní důsledek založení Issue ani dokončení části analýzy.
+Před přechodem do Ready musí být doplněný kompletní pracovní kontrakt relevantní pro daný typ práce a readiness checklist musí odpovídat skutečnému stavu. Analytik připravuje obsah; Orchestrátor při handoffu kontroluje Ready stav a závislosti podle kompetencí v [`roles.md`](roles.md). Samotná existence Issue ani odeslání Issue formuláře Ready stav nevytváří.
 
 Ready znamená, že nová kompetentní instance agenta může začít pracovat pouze z repozitáře a Issue bez doplňujícího kontextu z chatu.
 
