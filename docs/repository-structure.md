@@ -67,4 +67,4 @@ Historické dokumenty mohou existovat pouze pokud:
 - nejsou v běžné kontextové cestě agenta,
 - nehrozí jejich záměna za aktuální pravidla.
 
-Pokud historický dokument nemá hodnotu, je lepší spoléhat na Git historii než udržovat druhou zastaralou kopii v repozitáři.
+Historický nebo rozhodovací artefakt může být autoritativní jako záznam toho, co bylo v minulosti rozhodnuto, ale není tím automaticky autoritativní pro současné provozní pravidlo. Pokud historický dokument nemá samostatnou auditní hodnotu, je lepší spoléhat na Git historii než udržovat druhou zastaralou kopii v repozitáři.
