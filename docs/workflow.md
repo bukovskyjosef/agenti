@@ -23,6 +23,20 @@ Analytik připraví issue tak, aby bylo jednoznačné:
 
 Produktové nejasnosti se řeší před označením práce jako Ready.
 
+## Human decision loop
+
+Pokud práce vyžaduje produktové nebo governance rozhodnutí člověka, musí být rozhodovací bod explicitně zachycen v GitHubu. Asistentka podle kompetencí v [`roles.md`](roles.md):
+
+1. vyhledá otevřené explicitní decision body vyžadující Human / Product Ownera,
+2. zpracovává je s člověkem po jednom; pokud mezi nimi existují závislosti nebo blokace, použije jejich logické pořadí, nikoli vlastní produktovou prioritu,
+3. u každého bodu stručně popíše problém, nabídne zpravidla 2–3 materiálně odlišné varianty a podstatné dopady; doporučení je volitelné,
+4. zaznamená explicitní lidské rozhodnutí do původního decision/work artefaktu,
+5. pokud rozhodnutí lze přímo a mechanicky propsat, aktualizuje pouze kanonické artefakty, jejichž aktuální pravda se rozhodnutím mění,
+6. pokud rozhodnutí vyžaduje další analýzu, návrh nebo netriviální implementaci, vytvoří nebo předá navazující work item příslušné roli místo oportunistického provedení této práce,
+7. do GitHubu zaznamená dostatečný handoff, aby další role nepotřebovala soukromý kontext z rozhovoru s člověkem.
+
+Decision artefakt po rozhodnutí zůstává auditní stopou. Aktuální trvalé pravidlo musí být zachyceno ve svém kanonickém provozním dokumentu; decision artefakt se nesmí stát druhou paralelní specifikací.
+
 ## 3. Ready
 
 Issue je Ready pouze tehdy, pokud splňuje [`issue-standard.md`](issue-standard.md).
