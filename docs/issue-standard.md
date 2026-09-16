@@ -10,7 +10,7 @@ Jeden work item se průběžně vyvíjí ve stejném GitHub Issue. Jeho aktuáln
 - **Analysis** — Issue se dopracovává, řeší se scope, nejasnosti, rozhodnutí, závislosti a podmínky dokončení,
 - **Ready** — Issue splňuje kompletní pracovní kontrakt a Definition of Ready níže a může být předáno vykonávající roli.
 
-Přechod do Ready je explicitní změna stavu téhož Issue, nikoli vznik nového Issue. Stav Ready nesmí být nastaven, pokud není splněná celá Definition of Ready.
+Přechod do Ready je explicitní změna stavu téhož Issue, nikoli vznik nového Issue. Stav Ready nesmí být nastaven, pokud není splněná celá Definition of Ready. Za ověření této podmínky při přípravě/handoffu odpovídá role, která podle workflow připravuje nebo řídí Ready přechod; samotná Issue šablona není automatický validátor Ready stavu.
 
 ## Povinný obsah před Ready
 
