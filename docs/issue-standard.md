@@ -85,7 +85,7 @@ Analytické Issue je dokončené, pokud je hotový jeho analytický výstup, jso
 
 ### Review nebo audit
 
-Review/audit Issue je dokončené podle pravidel `review-model.md`: reviewer zaznamenal závěr a důkazy, blocking nálezy jsou vypořádané způsobem vyžadovaným daným review a follow-up práce je evidovaná tam, kde je potřeba.
+Review/audit Issue je dokončené podle pravidel [`review-model.md`](review-model.md): reviewer zaznamenal závěr a důkazy, blocking nálezy jsou vypořádané způsobem vyžadovaným daným review a follow-up práce je evidovaná tam, kde je potřeba.
 
 Review nebo audit **nevyžaduje další review pouze proto, že jeho výsledkem je review**. Další nezávislá kontrola se provádí jen tehdy, pokud ji výslovně požaduje pracovní kontrakt nebo jiné platné pravidlo.
 
