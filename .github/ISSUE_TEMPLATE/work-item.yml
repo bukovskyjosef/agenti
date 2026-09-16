@@ -71,6 +71,7 @@ body:
       options:
         - Orchestrator
         - Analyst
+        - Asistentka
         - Developer
         - Tester
         - Reviewer
