@@ -50,7 +50,7 @@ Pokud normativní informace již existuje u svého kanonického vlastníka, jin�
 
 - **Aktuální normativní pravidla:** příslušné kanonické dokumenty `docs/*.md` podle mapy výše.
 - **Agentní a lidské entrypointy:** `AGENTS.md` a kořenový `README.md`; orientují a odkazují, ale nevytvářejí paralelní vlastnictví detailních pravidel.
-- **Rozhodovací záznamy:** `docs/decisions/` a GitHub decision artefakty; uchovávají kontext, rozhodnutí a auditní historii, ale po propsání nenahrazují aktuální provozní specifikaci.
+- **Rozhodovací záznamy:** `docs/decisions/` a GitHub decision artefakty; uchovávají kontext, rozhodnutí a auditní historii. Po propsání rozhodnutí nejsou aktuální provozní specifikací; tu vlastní příslušný kanonický normativní dokument.
 - **Pracovní úkoly:** GitHub Issues.
 - **Návrhy změn a jejich diskuse:** branches a Pull Requests.
-- **Historické nebo pomocné materiály:** pouze pokud jsou jasně označené jako neautoritativní.
+- **Historické nebo pomocné materiály:** pouze pokud jsou jasně označené jako neautoritativní pro aktuální provozní stav.
