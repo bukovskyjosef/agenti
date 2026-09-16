@@ -2,6 +2,8 @@
 
 Tento dokument definuje standardní životní cyklus práce od nejasného záměru po ověřený výsledek.
 
+Ne každé Issue musí projít všemi níže uvedenými realizačními a kontrolními fázemi. Použitelné fáze se určují podle typu výsledku práce a předepsaných kontrolních bran. Typově specifická pravidla dokončení vlastní [`issue-standard.md`](issue-standard.md).
+
 ## 1. Intake
 
 Vstupem může být lidský požadavek, nalezený problém nebo návrh změny.
@@ -47,41 +49,36 @@ Ready znamená, že nová kompetentní instance agenta může začít pracovat p
 
 Orchestrátor určí vykonávající roli a zkontroluje závislosti. Jedno issue má mít jednoznačného vlastníka práce v dané fázi.
 
-## 5. Implementation
+## 5. Implementation / execution
 
-Vývojář nebo jiná vykonávající role:
+Pokud Issue vyžaduje implementaci nebo jinou vykonávající změnu, příslušná role:
 
 1. načte povinný kontext,
 2. ověří scope,
 3. provede pouze změny potřebné pro issue,
 4. průběžně ověřuje výsledek,
 5. zaznamená nové nálezy mimo scope bez jejich oportunistické opravy,
-6. vytvoří Pull Request navázaný na issue.
+6. vytvoří odpovídající auditní stopu změny podle pravidel projektu.
 
 ## 6. Independent review
 
-Reviewer nezávisle ověří změnu podle [`review-model.md`](review-model.md). Kontroluje především soulad se zadáním, scope, konzistenci a rizika.
+Pokud je pro daný work item předepsané nezávislé review, Reviewer ověří změnu podle [`review-model.md`](review-model.md). Kontroluje především soulad se zadáním, scope, konzistenci a rizika.
 
 Blokující nálezy vrací autorovi. Reviewer je sám neopravuje.
 
+Review-only nebo auditní Issue nezískává další review automaticky jen proto, že samo obsahuje review. Jeho completion se řídí typově specifickými pravidly v [`issue-standard.md`](issue-standard.md).
+
 ## 7. Verification / testing
 
-Tester nezávisle ověří acceptance criteria a relevantní hraniční případy. Výsledek musí být doložitelný.
+Pokud je pro daný work item předepsané testování nebo nezávislá verifikace, Tester ověří acceptance criteria a relevantní hraniční případy. Výsledek musí být doložitelný.
 
 Pokud najde defekt, popíše očekávané a skutečné chování a předá ho zpět. Produkční kód sám neopravuje.
 
-Pořadí review a testování může být podle typu práce odlišné, ale požadované kontrolní brány nesmí být vynechány jen kvůli rychlosti.
+Pořadí review a testování může být podle typu práce odlišné, ale předepsané kontrolní brány nesmí být vynechány jen kvůli rychlosti.
 
 ## 8. Completion
 
-Issue může být uzavřeno pouze tehdy, pokud:
-
-- acceptance criteria jsou splněna,
-- požadované review a testování proběhlo,
-- blokující nálezy jsou vyřešeny,
-- relevantní kanonická dokumentace byla aktualizována,
-- nevznikl skrytý nový produktový požadavek,
-- navazující problémy mimo scope jsou samostatně zaznamenané.
+Issue lze uzavřít pouze podle typově specifických completion pravidel v [`issue-standard.md`](issue-standard.md). Workflow samo nepřidává univerzální review nebo testing požadavek ke každému typu práce.
 
 ## 9. Handoff contract
 
