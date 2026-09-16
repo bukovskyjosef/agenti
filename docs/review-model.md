@@ -34,6 +34,8 @@ Reviewer popíše problém, důvod a očekávaný stav. Opravu provádí autor n
 
 Reviewer nesmí při review tiše opravovat kontrolovaný kód, protože tím zaniká oddělení autora a kontroly.
 
+Pokud review nález vyžaduje samostatný follow-up, Reviewer smí vytvořit navazující **Intake Issue**, které věrně zachytí nález a odkáže na původní review artefakt. Založením Issue Reviewer neurčuje produktové řešení, prioritu ani Ready stav; další analýzu, routing a prioritizaci provádí role s příslušnou kompetencí.
+
 ## 5. Tester versus reviewer
 
 Reviewer a tester nejsou totožné funkce:
@@ -49,7 +51,7 @@ Review je dokončeno, pokud:
 
 - všechny blocking nálezy byly vyřešeny nebo explicitně rozhodnuty člověkem,
 - reviewer znovu ověřil opravený stav,
-- zbývající non-blocking body jsou podle potřeby převedeny do samostatných issues,
+- zbývající follow-up body jsou podle potřeby buď zaznamenané jako finding-derived Intake Issues, nebo explicitně předané Orchestrátorovi/Human bez ztráty návaznosti na původní nález,
 - reviewer může odkázat na konkrétní důkazy pro své závěry.
 
 Dokončené review se **nereviewuje znovu pouze proto, že je samo pracovním Issue nebo review artefaktem**. Další nezávislá kontrola review vzniká jen tehdy, pokud ji explicitně požaduje pracovní kontrakt nebo jiné platné pravidlo. Typově specifická completion pravidla vlastní [`issue-standard.md`](issue-standard.md).
