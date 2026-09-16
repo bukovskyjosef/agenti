@@ -51,3 +51,5 @@ Review je dokončeno, pokud:
 - reviewer znovu ověřil opravený stav,
 - zbývající non-blocking body jsou podle potřeby převedeny do samostatných issues,
 - reviewer může odkázat na konkrétní důkazy pro své závěry.
+
+Dokončené review se **nereviewuje znovu pouze proto, že je samo pracovním Issue nebo review artefaktem**. Další nezávislá kontrola review vzniká jen tehdy, pokud ji explicitně požaduje pracovní kontrakt nebo jiné platné pravidlo. Typově specifická completion pravidla vlastní [`issue-standard.md`](issue-standard.md).
