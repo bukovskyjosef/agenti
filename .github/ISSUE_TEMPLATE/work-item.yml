@@ -1,0 +1,108 @@
+name: Work item
+description: Define a task so an agent can execute it without external chat context.
+title: "[TASK] "
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What observable result must be achieved?
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Only context needed to understand the task. Link canonical sources instead of copying them.
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: What is explicitly part of this task?
+    validations:
+      required: true
+
+  - type: textarea
+    id: out_of_scope
+    attributes:
+      label: Out of scope
+      description: What must not be changed as part of this task?
+    validations:
+      required: true
+
+  - type: textarea
+    id: requirements
+    attributes:
+      label: Requirements
+      description: Normative requirements or links to their canonical locations.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Observable and testable completion conditions.
+    validations:
+      required: true
+
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints
+      description: Relevant technical, security, compatibility or process constraints.
+
+  - type: textarea
+    id: references
+    attributes:
+      label: Canonical references
+      description: Files, decisions, issues or contracts authoritative for this task.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: role
+    attributes:
+      label: Responsible role
+      options:
+        - Orchestrator
+        - Analyst
+        - Developer
+        - Tester
+        - Reviewer
+    validations:
+      required: true
+
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation
+      description: How must the result be verified?
+    validations:
+      required: true
+
+  - type: textarea
+    id: documentation
+    attributes:
+      label: Documentation impact
+      description: Which canonical documents must change, or why no documentation update is needed.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: ready
+    attributes:
+      label: Definition of Ready
+      options:
+        - label: No unresolved product decision is required before this work can start.
+          required: true
+        - label: Scope and out-of-scope are explicit.
+          required: true
+        - label: Acceptance criteria are testable.
+          required: true
+        - label: A new competent agent can start from this issue and the repository without external chat context.
+          required: true
