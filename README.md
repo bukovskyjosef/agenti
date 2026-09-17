@@ -41,6 +41,21 @@ Mapa kanonických pravidel a detailní normativní dokumentace je v [`docs/READM
 9. informační architekturu repozitáře a provider adapters,
 10. způsob přenosu tohoto modelu do dalších projektů.
 
+## Vývoj tohoto etalonu
+
+`bukovskyjosef/agenti` je **cílový standard**: `main` musí být samostatně čitelný a obsahovat vše potřebné pro pochopení aktuálně platného modelu. Agent při běžné práci ani při adopci tohoto standardu nemusí číst žádný jiný repozitář.
+
+Obecné audity modelu, experimenty, failure analysis a návrhy budoucího redesignu začínají v samostatné laboratoři [`bukovskyjosef/agenti-lab`](https://github.com/bukovskyjosef/agenti-lab). Laboratoř poskytuje evidence a návrhy, ale **není zdrojem aktuální pravdy tohoto standardu**.
+
+Pokud člověk v laboratoři schválí návrh k `PROMOTE`, musí před změnou cílového standardu vzniknout samostatný linked work/decision artefakt zde v `agenti`. Teprve tento cílový artefakt může podle zdejší governance autorizovat Analysis, implementaci, review a integraci změny. Konkrétní již autorizovaná změna standardu se realizuje přímo v `agenti`, nikoli v laboratoři.
+
+Praktická hranice pro člověka:
+
+- **audit / experiment / obecný návrh na změnu modelu** → `agenti-lab`,
+- **konkrétní člověkem autorizovaná změna cílového standardu** → Issue a následný workflow v `agenti`.
+
+Historické audity a remediation Issues, které v `agenti` vznikly před zavedením této hranice, zůstávají na místě jako auditní historie.
+
 ## Status
 
 Repozitář je budován jako živý etalon cílového stavu. Změny jeho governance jsou produktovými změnami tohoto repozitáře a podléhají lidskému rozhodnutí a předepsanému review.
