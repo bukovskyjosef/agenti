@@ -25,17 +25,24 @@ Agent smí dělat technická rozhodnutí uvnitř již autorizovaného scope. Nes
 - materiální změnu scope,
 - governance změnu,
 - vědomé přijetí významného trade-offu/rizika,
-- release authorization tam, kde ji Project Profile vyžaduje.
+- release authorization tam, kde ji Project Profile vyžaduje,
+- nedeterministické zrušení/opuštění product intentu, scope nebo candidate.
 
 Absence odpovědi není rozhodnutí.
+
+Specializovaná role smí durable zaznamenat evidence a doporučit ukončení práce. `Stopped` smí vzniknout bez nového Human rozhodnutí pouze v deterministickém `SUPERSEDED` případě, kdy authoritative replacement/current work item už durable existuje a Project Profile/project policy takový automatic supersession explicitně dovoluje.
 
 ## 3. Human input je podmíněný durable interrupt
 
 Kterákoli role smí vyžádat Human input pouze tehdy, když její další nutnou akci nelze bezpečně a správně provést z aktuálního durable state a existující autority role.
 
-Blocking request i Human odpověď musí být durable navázané na autoritativní work item. Dokud je požadovaný vstup unresolved, automatizace nesmí překročit dotčenou hranici. Pokud žádná jiná nezávislá autorizovaná práce nemůže pokračovat, používá se existující lifecycle stav `Blocked`; nevzniká nový hlavní stav.
+Blocking request i Human odpověď musí být durable navázané na autoritativní work item. Dokud je požadovaný vstup unresolved, automatizace nesmí překročit dotčenou hranici. Pokud žádná jiná nezávislá autorizovaná práce nemůže pokračovat, používá se lifecycle stav `Blocked`.
 
-Po Human odpovědi se nepokračuje slepě v původní agentní session. Systém znovu načte aktuální authoritative state, ověří identitu a binding requestu, promítne odpověď do relevantního kontraktu/stavu a pokračuje od nejdříve dotčeného bodu.
+`Blocked` je recoverable/temporary. Pokud je durable rozhodnuto, že work item nemá dále pokračovat, používá se non-success terminal `Stopped` podle `delivery-cycle.md`; nejde o druhou formu blockeru.
+
+Po Human odpovědi se nepokračuje slepě v původní agentní session. Systém znovu načte aktuální authoritative state, ověří identitu a binding requestu, promítne explicitní Human response do durable state a spustí další již autorizovaný krok od nejdříve dotčeného bodu.
+
+Pokud Human response vyžaduje analytical derivation/mutation Scope/Requirements/AC/Ready contractu, tuto analytickou práci provádí Analyst; Asistentka pouze transportuje/zapisuje explicitní Human input.
 
 Předchozí analýza, check, review nebo approval zůstává platný pouze tehdy, pokud zůstaly platné jeho vstupy a předpoklady. Specializovaná Human release authorization si zachovává vlastní exact-candidate a `STALE` pravidla.
 
@@ -52,32 +59,50 @@ Agent:
 - nepovyšuje recommendation, hardening nebo redesign na povinnou implementaci,
 - nový materiální problém zaznamená a routuje správné autoritě.
 
-## 5. Role spolupracují, nekonkurují
+## 5. Role jsou authority contexts, ne automaticky sessions
+
+Canonical role definuje kompetenci/autoritu pro právě vykonávanou práci. Neznamená automaticky samostatný model, proces nebo session.
+
+Každá role-bound session/run však musí mít v každém okamžiku právě jednu **explicitně aktivní roli**:
+
+- role activation/change vzniká pouze explicitním Human assignmentem nebo durable orchestration assignmentem,
+- session nesmí roli odvodit z Issue title, handoffu, repository state ani z toho, že další krok působí zřejmě,
+- session nesmí tiše přejít na jinou roli nebo vykonat out-of-role práci,
+- jedna session smí sekvenčně vykonávat více kompatibilních rolí pouze přes explicitní role transitions a pouze pokud tím není porušena independence/least-privilege hranice,
+- chybějící nebo nejednoznačná role je blocker/configuration error, nikoli důvod k domýšlení defaultu.
+
+Autor změny a její nezávislý Reviewer musí být různé logické pracovní instance. Reviewer + Tester lze konsolidovat pouze tam, kde to work contract/Project Profile explicitně dovoluje.
+
+## 6. Role spolupracují, nekonkurují
 
 Výchozí model není několik agentů řešících totéž. Každá fáze má vlastní odpovědnost a kontrolní role práci autora nepřebírá.
 
-Autor změny a její nezávislý Reviewer musí být různé logické pracovní instance.
+Asistentka je Human-facing intake/queue/transport function. Analyst vlastní analytical derivation/shaping/mutation executable work contractu. Orchestration function je jediný canonical dispatcher dalšího již autorizovaného kroku. Integrator vlastní product-level composite-candidate control-plane binding v `multi-repo`, jakmile více repo-local candidates tvoří jeden product candidate.
 
-## 6. Jedna aktuální pravda pro každou rule family
+## 7. Jedna aktuální pravda pro každou rule family
 
 Projekt má určit kanonického vlastníka každé trvalé rodiny pravidel. README, AGENTS a task-local Issues mohou shrnovat nebo odkazovat, ale nesmí vytvářet nezávislou druhou specifikaci.
 
-## 7. Context economy
+## 8. Context economy
 
-Agent načítá minimum **úplného** kontextu potřebného pro úkol. Tokenová úspora nesmí znamenat vynechání relevantního kontraktu; zároveň se do tasků nekopíruje celý repozitář.
+Agent načítá minimum **úplného** kontextu potřebného pro aktivní roli a úkol. Tokenová úspora nesmí znamenat vynechání relevantního kontraktu; zároveň se do tasků nekopíruje celý repozitář.
 
-## 8. Automatizace nerozšiřuje autoritu
+Nový drahý role run se nespouští jen proto, že dorazil event. Pokud relevantní semantic work state od posledního applicable completed run zůstává materiálně stejný a neexistuje jiný objektivně platný progress reason, orchestrace run potlačí podle `automation.md`.
+
+## 9. Automatizace nerozšiřuje autoritu
 
 Workflow, API token, CLI nebo AI provider jsou mechanismy. Technická možnost něco zapsat nebo mergnout není oprávnění to udělat.
 
 Každý automatizovaný krok musí být:
 
 - odvoditelný z durable state,
-- povolený rolí,
-- idempotentní nebo chráněný proti duplicitě,
-- bezpečně zastavitelný na unresolved Human input nebo jiném Human-owned gate.
+- povolený explicitně aktivní rolí,
+- před dispatch způsobilý podle run-eligibility/dedup pravidel,
+- idempotentní nebo chráněný proti duplicitě na write/transition úrovni,
+- bezpečně zastavitelný na unresolved Human input nebo jiném Human-owned gate,
+- neschopný restartovat `Stopped` práci bez explicitně autorizovaného reopen transition.
 
-## 9. Decision gate ≠ release authorization gate
+## 10. Decision gate ≠ release authorization gate
 
 **Decision gate** určuje, *co* je autorizovaný produkt/scope/governance výsledek.
 
@@ -85,6 +110,6 @@ Každý automatizovaný krok musí být:
 
 Release approval nesmí měnit scope ani obejít chybějící technické gate. Generic Human Input Request tyto specializované významy nenahrazuje.
 
-## 10. Projektový profil odděluje invariant od konfigurace
+## 11. Projektový profil odděluje invariant od konfigurace
 
-Referenční standard vlastní obecné invarianty. Konkrétní projekt musí explicitně určit repository topology a canonical ownership, své branches, environments, required gates, deployment trigger, release-approval policy a recovery authority v Project Profile.
+Referenční standard vlastní obecné invarianty. Konkrétní projekt musí explicitně určit repository topology a canonical ownership, své branches, environments, required gates, deployment trigger, release-approval policy, recovery authority, role/provider/runner mapping a provider-neutral způsob pre-dispatch run eligibility/dedup v Project Profile.
