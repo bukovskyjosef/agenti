@@ -8,8 +8,9 @@ Human intent
 Asistentka → Intake Issue
   ↓
 Analysis
-  ├─ required Human input → Human-input interrupt/resume subflow
-  └─ Ready
+  ├─ required Human input → Human-input interrupt/resume subflow → Analysis
+  ├─ decomposition required → Parent Intent + executable child Issue(s) → Analysis per child
+  └─ one bounded executable/reviewable contract → Ready
         ↓
 Developer / In Progress
         ↓
@@ -55,6 +56,16 @@ Pending Human Input Request blokuje dotčený přechod. Pokud žádný jiný nez
 
 Release authorization se nemá modelovat přidáním mnoha Issue stavů; je to samostatný durable gate nad konkrétním release candidate.
 
+### Analysis shaping před Ready
+
+`Analysis` vždy znovu určuje, zda aktuální Human intent bezpečně tvoří jeden executable delivery unit. Kanonické shaping/decomposition pravidlo vlastní `work-item.md`:
+
+1. jeden bounded executable/reviewable contract je možný → stejné Issue pokračuje k normálnímu `Ready`,
+2. chybí Human-owned input → existing Human Input Request / Decision subflow a po resolution návrat do `Analysis`,
+3. jeden coherent delivery unit není bezpečný → původní Issue se stává non-executable `Parent Intent` a vzniknou bounded executable child work items z již autorizovaného scope.
+
+Parent Intent není nový lifecycle stav a neprochází implementací. Každý executable child prochází normální `Analysis → Ready → ...` lifecycle samostatně. Technická velikost ani počet popsatelných sub-outcomes samy decomposition nevyžadují.
+
 ## 3. Human-input interrupt a deterministic resume
 
 Role smí vyžádat Human input pouze když její další nutnou akci nelze bezpečně a správně provést z aktuálního durable state a existující autority role. Generic request contract vlastní `work-item.md`.
@@ -94,6 +105,18 @@ Proto zejména:
 - změna PR/head/candidate invaliduje gates bound na starý candidate,
 - target/environment/base drift invaliduje pouze evidence, pro které je podle Project Profile relevantní,
 - release authorization používá navíc vlastní přísná exact-candidate `STALE` pravidla níže.
+
+Pokud Human response změní autorizovaný input na `Parent Intent` — například scope/MVP boundary, global exclusion/constraint nebo inherited product decision — použije se tentýž dependency invariant přes child→parent binding:
+
+1. identifikují se pouze executable children, jejichž contract/evidence na změněném parent inputu skutečně závisí,
+2. každý affected child se vrátí na svůj **nejdříve dotčený bod**,
+3. child, který už nesplňuje Definition of Ready, opustí executable path, dokud není jeho contract opraven,
+4. affected implementation/check/review/approval evidence se re-evaluuje podle normální dependency validity,
+5. změněný PR/head/candidate/target používá existující exact-candidate a release `STALE` semantics,
+6. unaffected children zůstávají validní,
+7. dříve spuštěná obsolete child práce nesmí pokračovat jen proto, že byla před parent změnou `Ready` nebo už dostala trigger.
+
+Nevzniká parent-specific stale status ani druhý invalidation framework.
 
 ### Decision special case
 

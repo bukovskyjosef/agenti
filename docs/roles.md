@@ -50,19 +50,27 @@ Scope firewall mezi lidským záměrem a realizací.
 ### Odpovídá za
 
 - pochopení problému a relevantních kanonických pravidel,
+- adaptive shaping Human intentu uvnitř normální `Analysis`, úměrně ambiguity, Human-owned decision space, risk a skutečné potřebě decomposition,
+- odvození všech bezpečně zjistitelných faktů z canonical repository/project state místo zbytečných Human otázek,
+- volbu mezi: zachováním stejného Issue jako jednoho bounded executable/reviewable contractu, existing Human Input Request / Decision mechanismem pro chybějící Human-owned input, nebo decomposition podle `work-item.md`,
 - nejmenší bezpečný scope,
 - explicitní Out of scope,
 - testovatelná acceptance criteria,
 - dependencies, shared surfaces a concurrency,
 - identifikaci decision gates a dalších required Human inputs,
-- přípravu work itemu do Ready.
+- pokud je Human input nutný, položení jen nejmenšího coherent next setu Human-owned otázek potřebného k materiálnímu snížení nejistoty,
+- při decomposition rozdělení pouze již autorizovaného scope do bounded executable child work items a zachování jejich durable parent authorization binding,
+- přípravu každého executable work itemu do Ready.
 
 ### Nesmí
 
 - nahrazovat nejasnost předpokladem,
 - rozšiřovat scope kvůli „lepšímu“ redesignu,
 - dělat produktová rozhodnutí,
-- převádět recommendation na requirement bez autority.
+- převádět recommendation na requirement bez autority,
+- vyžadovat od Humana kompletní implementation-ready specification, pokud chybějící části může bezpečně odvodit,
+- rozdělit work item pouze kvůli technické velikosti, effortu, počtu souborů nebo samotnému počtu popsatelných sub-outcomes,
+- vytvořit decomposition nový goal, feature, behavior nebo jiný product scope, který Human neautorizoval.
 
 ## Developer
 

@@ -8,6 +8,8 @@ Event pouze říká „stav se mohl změnit“. Každý agent/runner před write
 
 To platí i pro Human response: `HUMAN_INPUT_RESOLVED` není příkaz „pokračuj“, ale pouze trigger k nové state reconstruction.
 
+U executable child work itemu zahrnuje authoritative state také aktuální `Parent Intent` a inherited parent authorization inputs, na které child durable odkazuje. Child trigger nesmí obejít pozdější parent změnu.
+
 ## 2. Referenční event vocabulary
 
 Projekt může eventy mapovat na GitHub native state, labels, comments, checks, webhooks nebo jiný mechanismus. Nemá vytvářet duplicitní pseudo-ERP, pokud GitHub již pravdu reprezentuje.
@@ -31,6 +33,8 @@ Sémanticky musí umět rozlišit alespoň:
 - `INTEGRATION_REQUESTED`
 - `INTEGRATION_COMPLETED` / `INTEGRATION_FAILED`
 - `DEPLOYMENT_VERIFIED` / `DEPLOYMENT_FAILED`
+
+Adaptive shaping/decomposition nepřidává novou event family; jde o normální `Analysis` a durable Issue state podle `work-item.md`.
 
 ## 3. Human-input event semantics
 
@@ -88,9 +92,14 @@ Použij podle platformy například:
 - compare-and-set kontrolu lifecycle/candidate identity,
 - compare-and-set kontrolu Human Request ID/status/context binding,
 - deduplikaci follow-up artefaktů,
+- deduplikaci automated child creation a parent↔child linkage,
 - retry-safe kroky.
 
 Automation nesmí pokračovat přes transition guard, dokud relevantní request zůstává `PENDING`. `STALE` request se nesmí automaticky změnit zpět na resolved/current jen proto, že dorazil opožděný event nebo odpověď.
+
+Před vytvořením nebo spuštěním executable child orchestrace znovu načte authoritative Parent Intent + child state, ověří durable parent relationship a inherited authorization inputs. Retry decomposition nesmí vytvořit duplicate child pro stejný plánovaný scope unit.
+
+Pokud se Parent Intent změní, orchestrace nepovažuje všechny children mechanicky za stale. Identifikuje affected children podle jejich durable parent-input dependencies a použije earliest-affected-point pravidla z `delivery-cycle.md`. Delayed nebo již queued run affected child se zastaví, pokud current authoritative state už jeho předchozí `Ready`/next action nepovoluje; unaffected children mohou pokračovat.
 
 ## 7. Role isolation
 
@@ -142,4 +151,4 @@ Projekt musí durable určit minimálně:
 - provider/runner mapping rolí a eventů,
 - případnou policy pro target/base drift po release approval.
 
-Generic Human-input subflow nepotřebuje vlastní Project Profile queue/location: používá autoritativní work item a control plane už určený repository topology.
+Generic Human-input subflow ani adaptive shaping/decomposition nepotřebují vlastní Project Profile queue/location: používají autoritativní work item/control plane a native GitHub relationships už určené repository topology.

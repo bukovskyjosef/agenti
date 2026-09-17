@@ -4,6 +4,24 @@ GitHub Issue je task-local pracovní kontrakt. Stejné Issue typicky dozrává z
 
 V `single-repo` je Issue ve stejném repository jako implementace. V `multi-repo` existuje právě jeden autoritativní work item v control/governance repository; implementation repositories nesmí vytvářet konkurenční product-level work contract.
 
+Každý nový Human intent je nejdřív Intake candidate. Existence Issue sama neznamená, že intent už tvoří executable contract.
+
+## Analysis shaping a decomposition
+
+Analyst během běžné `Analysis` přizpůsobí míru shaping tomu, kolik zbývá ambiguity, Human-owned product decision space, risk a potřeby decomposition. Technická velikost sama o sobě tuto míru neurčuje.
+
+Použije tento rozhodovací postup:
+
+1. **Jeden bounded contract je bezpečný:** pokud Human intent + canonical project state umožňují vytvořit jeden bounded executable/reviewable contract bez vymýšlení nových Human-owned product rozhodnutí, zůstává stejné Issue a doplní se do normálního `Ready`.
+2. **Chybí Human-owned input:** pokud potřebný product/governance/scope/clarification input nelze bezpečně odvodit, použije se existující Human Input Request / Decision mechanismus. Po durable resolution se tento rozhodovací postup znovu vyhodnotí.
+3. **Jeden coherent delivery unit není bezpečný:** decomposition je oprávněná pouze tehdy, když již autorizovaný scope nemůže bezpečně zůstat jedním coherent executable/reviewable work itemem bez materiální ztráty authorization clarity, independent readiness/review boundaries nebo dependency clarity, případně by execution jinak vyžadovala opakované nové Human-owned product-scope decisions.
+
+Více samostatně popsatelných/deliverable outcomes je pouze signál k posouzení decomposition. Technická složitost, effort, počet souborů ani počet sub-outcomes samy decomposition nevyžadují.
+
+Analyst odvodí vše, co lze bezpečně zjistit z canonical repository/project state. Pokud je nutný Human-owned input, ptá se jen na nejmenší coherent next set otázek potřebných k materiálnímu snížení nejistoty; Human nemusí ručně sepisovat kompletní implementation-ready specification.
+
+Decomposition pouze rozděluje již autorizovaný scope. Nesmí přidat nový goal, feature, behavior nebo jiný product scope bez Human authority.
+
 ## Povinný obsah před Ready
 
 Implementační nebo změnový work item musí obsahovat:
@@ -66,7 +84,7 @@ Odkaz na Project Profile a případná task-specific odchylka: zda kandidát vy�
 
 ## Definition of Ready
 
-Work item je Ready pouze pokud:
+Executable work item je Ready pouze pokud:
 
 - Goal je jednoznačný,
 - Scope a Out of scope jsou jasné,
@@ -84,6 +102,33 @@ Work item je Ready pouze pokud:
 Analyst nesmí označit Issue Ready jen proto, že existuje nebo obsahuje vyplněnou šablonu.
 
 Human input se může stát nutným i po `Ready`; tehdy vzniká cross-cutting request níže a Ready se znovu vyhodnotí pouze tehdy, pokud Human odpověď změnila vstupy Ready kontraktu.
+
+## Parent Intent a executable children
+
+Pokud Analysis podle pravidla výše skutečně vyžaduje decomposition, původní Intake Issue se stává **Parent Intent**.
+
+Parent Intent je non-executable product-level authorization/coordination work item. Vlastní:
+
+- původní Human intent,
+- authorized scope envelope / MVP boundary,
+- global `Out of scope`, constraints a relevantní Human product decisions,
+- decomposition do executable child work items,
+- overall completion condition.
+
+Parent Intent nemusí splnit executable Definition of Ready a neprochází později samostatným implementation passem. Je complete pouze tehdy, když je splněna jeho deklarovaná overall completion condition, typicky dokončením required children a případných explicitních parent-level conditions.
+
+Každý executable child:
+
+- samostatně splní normální Definition of Ready před implementation,
+- spotřebovává pouze bounded část již autorizovaného parent scope,
+- durable odkazuje Parent Intent a konkrétní inherited parent scope/decisions/constraints, na kterých jeho contract závisí,
+- obsahuje pouze child-local detail potřebný pro cold-start execution a nekopíruje celý parent specification jako konkurenční source of truth.
+
+Preferuj native GitHub parent/sub-issue relationship. Pokud v daném GitHub setupu není dostupný, Parent Intent a child musí mít explicitní durable bidirectional parent ↔ child odkazy v autoritativních Issues. Parent/sub-issue relationship znamená rozdělení širšího autorizovaného intentu; dependency/blocking relationship je samostatná relace a znamená, že work item nemůže pokračovat před jiným work itemem nebo podmínkou.
+
+V `multi-repo` Parent Intent i všechny autoritativní executable child Issues zůstávají v control/governance repository. Implementation branches/PRs/checks a repository-local technical evidence zůstávají v implementation repositories a odkazují zpět podle `Repository binding` níže.
+
+Pokud se později změní inherited parent authorization input, affected children se posuzují podle dependency/earliest-affected-point pravidel v `delivery-cycle.md`; nevzniká parent-specific stale lifecycle.
 
 ## Human Input Request
 
@@ -122,7 +167,7 @@ Po resolution se pokračuje podle `delivery-cycle.md`: current state se znovu na
 
 `single-repo` nepřidává žádná per-work-item topology metadata; Project Profile určuje, že control i implementation jsou ve stejném repository.
 
-V `multi-repo` musí autoritativní work item v control repository během delivery durable udržovat:
+V `multi-repo` musí autoritativní executable work item v control repository během delivery durable udržovat:
 
 - participating implementation repositories,
 - reverse links na každý implementation PR/change proposal,
