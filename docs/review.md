@@ -17,6 +17,8 @@ Autor změny nesmí být její nezávislý Reviewer. Reviewer pracuje z Issue, s
 7. Documentation — durable truth byla aktualizována tam, kde se změnila.
 8. Dependencies/concurrency — byla respektována koordinace.
 
+Pokud Reviewer zjistí, že bez Human input nelze review bezpečně dokončit, použije durable Human Input Request podle `work-item.md`; nevytváří ad-hoc chatovou eskalaci.
+
 ## 3. Finding má dvě osy
 
 ### Severity
@@ -40,10 +42,14 @@ Riziko nebo mezera vyžaduje nový produktový/governance/scope/architecture kon
 
 Reviewer popíše evidence a potřebnou autoritu; nesmí sám vybrat variantu jako schválenou.
 
+Blocking `DECISION_REQUIRED` vytvoří nebo odkáže `PENDING` Human Input Request typu `DECISION` v autoritativním work itemu. Finding disposition určuje, **proč** je potřeba Human authority; generic request zajišťuje durable otázku, guard a resume. Human response sama neobnoví review závěr — Reviewer/automation znovu vyhodnotí current contract, candidate a affected gates podle `delivery-cycle.md`.
+
+Blocking factual clarification, která není novou Human-owned product/governance/scope volbou, může použít request typu `CLARIFICATION` bez umělého překlasifikování na `DECISION_REQUIRED`.
+
 #### `RECOMMENDATION`
 Volitelné zlepšení nad současný kontrakt. Nezablokuje current work jen proto, že by bylo „lepší“.
 
-Developer ji nesmí oportunisticky implementovat během corrective loopu bez nové autority.
+Developer ji nesmí oportunisticky implementovat během corrective loopu bez nové autority. Recommendation sama není důvod pro blocking Human Input Request.
 
 ## 4. Celkový outcome
 
@@ -54,6 +60,8 @@ Reviewer vydá právě jeden výsledek:
 - `DECISION_REQUIRED`.
 
 `APPROVED` může obsahovat Recommendations.
+
+Pokud je review dočasně blokované generic `CLARIFICATION`/`HUMAN_ACTION` requestem, nevyrábí se kvůli tomu nová overall disposition; review zůstává nedokončené, dokud durable state neumožní znovu vyhodnotit výsledek.
 
 ## 5. Corrective loop
 
@@ -71,10 +79,12 @@ independent re-review
 
 Reviewer sám neopravuje kontrolovaný kód.
 
+Human response, která mění inputs tohoto loopu, vrací flow na nejdříve dotčený bod; předchozí review/check evidence se invaliduje jen v rozsahu svých změněných dependencies.
+
 ## 6. New scope
 
 Finding mimo current contract se nestává součástí PR jen proto, že byl objeven při review. Podle disposition se buď:
 
 - vrací do stejného corrective loopu (`DEFECT`),
-- routuje k Human decision (`DECISION_REQUIRED`),
+- routuje k Human decision (`DECISION_REQUIRED` + Human Input Request typu `DECISION`),
 - zachytí jako volitelný future Intake (`RECOMMENDATION`).

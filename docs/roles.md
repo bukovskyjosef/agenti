@@ -4,7 +4,20 @@
 
 Nejvyšší autorita pro produkt, scope, priority a governance. Pokud Project Profile vyžaduje Human release authorization, rozhoduje také o vydání konkrétního release candidate.
 
-Člověk nemá být rutinní scheduler nebo message bus mezi agenty.
+Člověk poskytuje pouze vstup, rozhodnutí nebo Human-only action, které skutečně vyžadují jeho autoritu. Nemá být rutinní scheduler, message bus mezi agenty ani ruční rekonstruátor toho, kde má workflow pokračovat.
+
+## Cross-role Human input
+
+Kterákoli execution/control role může vytvořit Human Input Request podle `work-item.md`, pokud její další nutnou akci nelze bezpečně provést z aktuálního durable state a její existující autority.
+
+Role nesmí Human request používat jako náhradu za:
+
+- přečtení dostupného canonical contextu,
+- in-scope technické rozhodnutí, které už smí sama udělat,
+- non-blocking recommendation,
+- agent-to-agent handoff.
+
+Po Human resolution se původní role automaticky „neprobudí“ s oprávněním pokračovat. Orchestrace rekonstruuje durable state a spustí aktuálně autorizovaný next step podle `delivery-cycle.md`.
 
 ## Asistentka
 
@@ -13,17 +26,19 @@ Human-facing rozhraní systému.
 ### Odpovídá za
 
 - zachycení Human požadavku do správného GitHub work itemu,
-- prezentaci fronty bodů, které skutečně čekají na člověka,
+- prezentaci fronty všech bodů, které skutečně čekají na člověka, jako views nad durable state,
+- prezentaci generic Human Input Requests a zpracování durable Human resolutions,
 - zpracování product/governance decision gates,
 - zpracování Human release authorization requestů,
-- přesný durable záznam explicitní lidské odpovědi,
-- spuštění/routing dalšího již autorizovaného kroku.
+- přesný durable záznam explicitní lidské odpovědi proti správnému request/gate,
+- spuštění/routing dalšího již autorizovaného kroku po re-evaluation current state.
 
 ### Nesmí
 
 - rozhodovat za člověka,
 - měnit priority nebo scope bez explicitní autority,
 - maskovat analýzu/implementaci jako „mechanické propsání“ rozhodnutí,
+- interpretovat `RESOLVED` jako blanket permission pokračovat bez validace request binding/gates,
 - udržovat druhý backlog mimo GitHub.
 
 Human queue je **view nad durable GitHub stavem**, ne samostatný todo soubor.
@@ -39,7 +54,7 @@ Scope firewall mezi lidským záměrem a realizací.
 - explicitní Out of scope,
 - testovatelná acceptance criteria,
 - dependencies, shared surfaces a concurrency,
-- identifikaci decision gates,
+- identifikaci decision gates a dalších required Human inputs,
 - přípravu work itemu do Ready.
 
 ### Nesmí
@@ -60,7 +75,7 @@ Realizuje Ready work contract.
 - lokální validaci,
 - izolovaný change proposal (typicky task branch + PR),
 - durable implementační handoff v PR,
-- transparentní zachycení blockers a out-of-scope findings.
+- transparentní zachycení blockers, required Human inputs a out-of-scope findings.
 
 ### Nesmí
 
@@ -74,13 +89,13 @@ Nezávisle ověřuje změnu proti work contractu a kanonickým pravidlům.
 
 Kontroluje zejména scope discipline, requirements, acceptance criteria, shared contracts, technickou přiměřenost, důkazy a dokumentaci.
 
-Finding klasifikuje podle `docs/review.md`. Reviewer neopravuje kontrolovanou změnu místo autora.
+Finding klasifikuje podle `docs/review.md`. Reviewer neopravuje kontrolovanou změnu místo autora. Pokud review skutečně potřebuje Human input, použije stejný durable request contract; `DECISION_REQUIRED` zůstává specializovanou finding disposition, nikoli obecným Human-input transportem.
 
 ## Tester / Verifier — volitelná samostatná role
 
 Použije se, pokud Project Profile nebo konkrétní work contract vyžaduje samostatnou behaviorální verifikaci.
 
-Ověřuje scénáře a acceptance criteria, zapisuje evidence a failure. Produkční implementaci sám neopravuje.
+Ověřuje scénáře a acceptance criteria, zapisuje evidence a failure. Produkční implementaci sám neopravuje. Pokud potřebuje Human-only action nebo blocking clarification, vytvoří Human Input Request místo závislosti na soukromém chatu.
 
 Reviewer a Tester mohou být u malého úkolu jedna nezávislá instance pouze tehdy, když to work contract explicitně dovoluje.
 
@@ -94,7 +109,8 @@ Vlastní technický přechod schváleného kandidáta přes integrační/release
 - re-validaci required gates a release authorization,
 - merge/promotion podle Project Profile,
 - spuštění nebo ověření deployment handoffu,
-- durable evidence výsledku.
+- durable evidence výsledku,
+- durable Human Input Request, pokud integrace/verification/recovery skutečně vyžaduje Human input před dalším krokem.
 
 ### Nesmí
 
@@ -106,3 +122,5 @@ Vlastní technický přechod schváleného kandidáta přes integrační/release
 ## Orchestration function
 
 Orchestrace nemusí být samostatná AI role. Může ji vykonávat GitHub Actions, service, agent-runner nebo Coordinator. Její pravomoc je vždy jen: **spustit další krok, který už je podle durable state autorizovaný**.
+
+Po `HUMAN_INPUT_RESOLVED` musí orchestrace nejdřív rekonstruovat current state, ověřit Request ID/status/binding a relevantní gates; event sám není oprávnění provést starou continuation.
