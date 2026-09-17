@@ -1,48 +1,66 @@
-# Agenti
+# Agenti — publikovaný referenční standard
 
-Referenční repozitář pro cílový návrh a provoz agentního systému v softwarových projektech.
+`agenti` je **čistý publikovaný blueprint** pro nastavení agentního vývoje softwarového projektu. Není to pracovní repozitář pro vývoj samotného standardu.
 
-Tento repozitář **neobsahuje reálný produkt**. Produktem je samotný způsob práce: pravidla, role, workflow, informační architektura, durable handoff, automatizační kontrakt a šablony, podle kterých mohou být řízeny další projekty s AI agenty.
+Jeho účel je umožnit instrukci typu:
 
-## Základní princip
+> Agente, přečti `bukovskyjosef/agenti` a připrav repozitář `<nové-repo>` přesně podle tohoto standardu.
 
-Projekt musí být pochopitelný a zpracovatelný agentem, který přichází bez kontextu z předchozí konverzace. Vše potřebné pro práci musí být dohledatelné v GitHub prostoru daného repozitáře.
+## Status tohoto repozitáře
 
-Tento README je lidský vstupní bod a orientační souhrn. Aktuální normativní pravidla vlastní kanonické dokumenty mapované v [`docs/README.md`](docs/README.md); tento soubor je nemá paralelně redefinovat.
+- `main` je jediný autoritativní publikovaný stav.
+- Aktuální strom obsahuje pouze současný standard potřebný k jeho adopci.
+- Issues, rozhodnutí, audity, experimenty, pracovní větve a review změn tohoto standardu patří do [`bukovskyjosef/agenti-lab`](https://github.com/bukovskyjosef/agenti-lab).
+- Historické GitHub artefakty nebo Git historie nejsou součástí aktuálního standardu.
+- Agent, který tento repozitář čte kvůli adopci, jej **nemá měnit**.
 
-- `main` obsahuje aktuální autoritativní stav tohoto referenčního modelu.
-- Trvalé znalosti, pravidla a rozhodnutí patří do verzovaných souborů repozitáře na jejich kanonická místa.
-- Pracovní úkoly a jejich stav patří do GitHub Issues.
-- Změny se připravují v branchech a Pull Requests a před integrací procházejí předepsanými control gates.
-- Chat, osobní paměť agenta ani externí poznámky nejsou zdrojem pravdy ani agent-to-agent message bus.
-- Produktová rozhodnutí dělá člověk.
-- Agenti pracují v explicitních rolích a nepřekračují své kompetence.
-- Rutinní předávání a orchestrace mají být proveditelné durable přes GitHub a mohou být bezpečně automatizované.
-- Severity review nálezu sama není oprávnění rozšířit scope; autoritu dalšího kroku určuje jeho disposition.
-- Každá rodina pravidel má jedno kanonické místo; ostatní dokumenty ji pouze orientačně shrnují nebo odkazují.
-- Kontext se načítá cíleně, ne plošně, aby agent spotřeboval minimum tokenů potřebných pro kvalitní práci.
+## Cílový delivery cyklus
+
+```text
+Human
+  ↓
+Asistentka — intake a Human queue
+  ↓
+Analyst — scope firewall
+  ├─ decision needed → Asistentka ↔ Human → Analyst
+  └─ Ready
+        ↓
+Developer
+        ↓
+PR + checks
+        ↓
+Independent Reviewer
+  ├─ DEFECT → Developer corrective loop
+  ├─ DECISION_REQUIRED → Asistentka ↔ Human
+  └─ APPROVED
+        ↓
+Human release authorization, pokud ji projekt vyžaduje
+        ↓
+Integrator / automation
+        ↓
+production-authoritative boundary
+        ↓
+automatic deployment + post-release verification
+        ↓
+Done
+```
+
+Člověk je produktová a release autorita, ne ruční scheduler nebo message bus mezi agenty.
 
 ## Kde začít
 
-Agent vždy začíná v [`AGENTS.md`](AGENTS.md).
+Agent začíná v [`AGENTS.md`](AGENTS.md). Mapa standardu je v [`docs/README.md`](docs/README.md).
 
-Mapa kanonických pravidel a detailní normativní dokumentace je v [`docs/README.md`](docs/README.md).
+## Dokumenty
 
-## Co tento repozitář definuje
+- [`docs/principles.md`](docs/principles.md) — základní invarianty a autorita,
+- [`docs/roles.md`](docs/roles.md) — role a kompetence,
+- [`docs/delivery-cycle.md`](docs/delivery-cycle.md) — end-to-end workflow a release model,
+- [`docs/work-item.md`](docs/work-item.md) — pracovní kontrakt a Definition of Ready,
+- [`docs/review.md`](docs/review.md) — nezávislé review a corrective loop,
+- [`docs/automation.md`](docs/automation.md) — event-driven orchestrace a bezpečnost automatizace,
+- [`docs/adoption.md`](docs/adoption.md) — jak standard zavést do nového nebo existujícího projektu.
 
-1. autoritu člověka a agentů,
-2. role a jejich kompetence,
-3. životní cyklus a concurrency pracovních úkolů,
-4. standard kvalitního GitHub Issue/work contractu,
-5. model nezávislé kontroly včetně severity × disposition,
-6. durable handoff mezi rolemi bez člověka jako message bus,
-7. provider-neutral model automatické orchestrace a chainingu,
-8. pravidla práce s kontextem a tokeny,
-9. informační architekturu repozitáře a provider adapters,
-10. způsob přenosu tohoto modelu do dalších projektů.
+## Co je projektově konfigurovatelné
 
-## Status
-
-Repozitář je budován jako živý etalon cílového stavu. Změny jeho governance jsou produktovými změnami tohoto repozitáře a podléhají lidskému rozhodnutí a předepsanému review.
-
-Návrhy, experimenty a diskuse nejsou součástí autoritativního cílového modelu, dokud nejsou přijaté a integrovány do `main`.
+Standard nevnucuje konkrétní AI provider, branch jména, deployment platformu ani univerzální testovací matici. Adoptující projekt musí tyto volby explicitně zaznamenat ve svém **Project Profile** podle `docs/adoption.md`.
