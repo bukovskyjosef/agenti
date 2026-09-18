@@ -15,11 +15,19 @@ Reviewer run musí mít explicitně aktivní roli `Reviewer`; nesmí si ji odvod
 1. Scope — změna řeší právě autorizovaný problém.
 2. Requirements — odpovídá kanonickým pravidlům a decisions.
 3. Acceptance criteria — existuje evidence splnění.
-4. Shared contracts — nebyly změněny bez autority.
-5. Technickou přiměřenost — řešení není zbytečně široké nebo křehké.
-6. Validation — test/check evidence podporuje tvrzení.
-7. Documentation — durable truth byla aktualizována tam, kde se změnila.
-8. Dependencies/concurrency — byla respektována koordinace.
+4. Semantic authority / implementation fidelity — implementation/technical artifact nepřidal, nezpřísnil ani jinak nezměnil product/domain behavior mimo dostatečně konkrétní autorizovaný upstream contract; konflikt se neposuzuje tak, že executable artifact automaticky přebírá product authority.
+5. Effective-state evidence — pokud review závěr závisí na current runtime/platform factu, evidence pochází z declared effective-state source/equivalence rule; design/config artifact sám není automaticky důkazem effective state.
+6. Shared contracts — nebyly změněny bez autority.
+7. Technickou přiměřenost — řešení není zbytečně široké nebo křehké.
+8. Validation — test/check evidence podporuje tvrzení.
+9. Documentation — durable truth byla aktualizována tam, kde se změnila.
+10. Dependencies/concurrency — byla respektována koordinace.
+
+Reviewer používá semantic authority/currentness informace z Project Profile/canonical map podle `principles.md` a `adoption.md`. Authority je fact-domain-scoped: effective runtime evidence může rozhodovat fakt o skutečně nasazeném/configured stavu, ale sama tím nezískává product/domain authority pro autorizované chování.
+
+Historical/snapshot/superseded artifact se nepoužije jako current authoritative source jen proto, že obsahuje relevantní text. Pokud current authority není zjistitelná nebo je upstream product/domain contract příliš neurčitý k posouzení fidelity bez vymýšlení product meaning, review zaznamená odpovídající blocker/finding místo normalizace podle current code/configuration.
+
+Effective-state inspection je požadována pouze pokud je effective fact materiální pro aktuální review contract/gate. Pokud Reviewer nemá k deklarovanému effective source autorizovaný přístup, přesně zaznamená unverified boundary/blocker a nesmí tvrdit equivalence z declared/design state.
 
 Pokud Reviewer zjistí, že bez Human input nelze review bezpečně dokončit, použije durable Human Input Request podle `work-item.md`; nevytváří ad-hoc chatovou eskalaci.
 
@@ -40,6 +48,8 @@ Severity popisuje dopad. **Nevytváří implementační autoritu.**
 Změna porušuje již autorizovaný kontrakt: například AC, existující invariant, required check, podporované chování nebo autorizovaný shared contract.
 
 Autorizovaný další krok je nejmenší in-scope corrective change ve stejném work itemu.
+
+Technický/executable artifact, který bez autority zavádí další, přísnější, alternativní nebo jinak odlišné product/domain pravidlo oproti dostatečně konkrétnímu upstream contractu, je `DEFECT`; jeho existující executability/enforcement není authority k přepsání product intentu.
 
 #### `DECISION_REQUIRED`
 Riziko nebo mezera vyžaduje nový produktový/governance/scope/architecture kontrakt.

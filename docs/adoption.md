@@ -11,7 +11,9 @@ Než něco vytvoříš:
 - najdi existující README/AGENTS/governance,
 - zjisti, zda projekt skutečně používá `single-repo` nebo `multi-repo`,
 - u `multi-repo` nejdřív identifikuj control/governance repository a z něj relevantní implementation repositories; nepovažuj více repozitářů za rovnocenné governance autority,
-- identifikuj business/domain/API/data dokumenty,
+- identifikuj product intent/context authority a business/domain/API/data dokumenty potřebné k interpretaci produktu,
+- pro významné truth-bearing artifact families zjisti jejich semantic purpose, authority scope, binding/currentness a vztah k upstream/downstream authority,
+- zjisti, kde se declared/design state může lišit od effective runtime/platform state a jaká evidence nebo equivalence rule dokládá effective current state,
 - zjisti branch a release model,
 - zjisti CI/CD, environments a deployment platformu,
 - najdi existující Issues/PR conventions,
@@ -19,7 +21,7 @@ Než něco vytvoříš:
 - zjisti, jak se dnes potlačují duplicate/no-op role runs a jak se eviduje retry/non-convergence,
 - odstraň nebo explicitně vyřeš konkurenční zdroje pravdy místo jejich slepého duplikování.
 
-Pokud je repository topology, control authority nebo role assignment nejasný, nevymýšlej jej — vytvoř odpovídající Human decision/configuration blocker.
+Pokud je repository topology, control authority, product/domain semantic authority, effective-state evidence nebo role assignment nejasný a tato nejasnost je materiální pro bezpečnou adopci, nevymýšlej ji — vytvoř odpovídající Human decision/configuration blocker.
 
 ## 2. Vytvoř Project Profile
 
@@ -28,7 +30,9 @@ Project Profile je projektově konkrétní instancí tohoto standardu. Musí ur�
 ```text
 Repository topology: single-repo | multi-repo
 Repository / authoritative control plane:
-Canonical documentation map:
+Product intent / context authority:
+Canonical documentation / semantic authority map:
+Effective-state evidence / declared→effective equivalence for relevant surfaces:
 Human / Product Owner:
 Production-authoritative boundary / boundaries:
 Task branch policy:
@@ -47,7 +51,35 @@ Target-drift policy after release approval:
 Deterministic automatic supersession policy: explicit rule | disabled
 ```
 
-`Deterministic automatic supersession policy` může být `disabled`; pokud projekt explicitně nepovolí přesně definovaný automatic supersession případ, `Stopped` z důvodu supersession vyžaduje Human authority.
+`Product intent / context authority` nemusí být nový samostatný soubor. Může odkazovat existující README, product specification nebo jiný current canonical source.
+
+`Deterministic automatic supersession policy` může být `disabled`; pokud projekt explicitně nepovolí přesně definovaný automatic supersession případ, `Stopped` z důvodu supersession vyžaduje Human authority. I když je automatic supersession povolen, source work se nesmí uzavřít jako superseded dříve, než je rekonstruovatelný lossless source→replacement mapping podle `work-item.md`.
+
+### Semantic authority map invariant
+
+Canonical documentation / semantic authority map nemusí používat pevnou taxonomy ani metadata schema. Musí však umožnit cold-start agentovi pro **významné truth-bearing artifact families** určit tam, kde je to relevantní:
+
+- semantic purpose / fact domain,
+- authority scope — které facts artefakt autoritativně určuje,
+- binding effect na implementation/review/runtime work,
+- currentness — current canonical, derived/explanatory, effective-state evidence nebo historical/snapshot/superseded význam; projekt může použít jiné názvy,
+- upstream/downstream vztah nebo precedence potřebnou k řešení konfliktů,
+- conflict behavior — který source rozhoduje daný typ faktu a který artefakt je při rozporu stale/defective/incomplete.
+
+Authority je fact-domain-scoped, nikoli globální žebříček všech souborů. Například live platform evidence může být autoritativní pro fakt „co je právě deploynuto“, ale nesmí přepsat product/domain authority pro fakt „jaké chování je autorizováno“.
+
+Technical/executable artifact nesmí z executability/enforcementu odvodit product/domain authority. Historical/snapshot/superseded artifacts jsou pro current-state reconstruction non-current by default, dokud je current authority explicitně nereaktivuje/reassignuje.
+
+Malý `single-repo` projekt může tento invariant splnit několika stručnými entries v existujícím Project Profile/docs mapě. Standard nevyžaduje nový document tree, local authority headers ani samostatný registry/provenance systém.
+
+### Effective-state invariant
+
+Pro surface, kde se versioned declaration může lišit od skutečného platform/runtime state, Project Profile/map určí effective-state source/evidence nebo deterministickou equivalence rule.
+
+- design/config artifact sám dokládá declared/intended state,
+- current effective-state claim používá relevantní effective evidence, pokud je tento fakt materiální pro work contract/gate,
+- pokud autorizovaná role effective source nemůže inspectovat, zaznamená unverified boundary/blocker místo tvrzení equivalence,
+- projekt s deterministickou Git→effective-state equivalence může tuto vazbu deklarovat jednou a nemusí zavádět recurring manual inspection.
 
 ### Role mapping invariant
 
@@ -130,12 +162,13 @@ Má být krátký router, ne druhá specifikace. Musí agentovi říct:
 
 1. přečti autoritativní work item,
 2. ověř, že máš právě jednu explicitně aktivní canonical role z Human/durable orchestration assignmentu; roli si neodvozuj a sám ji neměň,
-3. načti relevantní canonical docs podle mapy,
+3. načti relevantní canonical docs podle semantic authority mapy a respektuj jejich fact-domain-scoped authority/currentness,
 4. ověř lifecycle/terminal state/Ready/dependencies/concurrency,
-5. pokud další nutný krok vyžaduje Human input, vytvoř/odkaž durable Human Input Request a zastav pouze dotčenou akci; nehádej a nespoléhej na private chat,
-6. pokud work item je `Stopped`, nepokračuj bez explicitního authorized reopen transition,
-7. pracuj jen v scope a authority aktivní role,
-8. před dokončením zanech durable handoff; handoff sám nepřepíná aktivní roli další session.
+5. pokud je pro aktuální contract/gate materiální effective runtime/platform fact, použij jeho declared effective-state source/evidence nebo zaznamenej unverified boundary,
+6. pokud další nutný krok vyžaduje Human input, vytvoř/odkaž durable Human Input Request a zastav pouze dotčenou akci; nehádej a nespoléhej na private chat,
+7. pokud work item je `Stopped`, nepokračuj bez explicitního authorized reopen transition,
+8. pracuj jen v scope a authority aktivní role,
+9. před dokončením zanech durable handoff; handoff sám nepřepíná aktivní roli další session.
 
 V `multi-repo` je control-repository AGENTS product-level router. AGENTS v implementation repository musí nejprve identifikovat control repository a Project Profile a poté přidat pouze repository-local technický routing potřebný pro práci.
 
@@ -219,6 +252,10 @@ Projekt je připravený, pokud nová agentní instance dostane například pouze
 
 Musí zároveň platit:
 
+- cold-start agent dokáže z Project Profile/docs mapy určit product intent/context authority a semantic authority/currentness významných truth-bearing artifact families bez globálního žebříčku všech souborů,
+- technical/executable artifact není považován za product/domain authority jen proto, že je executable/enforced,
+- historical/snapshot/superseded material není používán jako current truth bez explicitní reactivation/reassignment,
+- pokud je effective runtime/platform fact materiální pro aktuální contract/gate, agent dokáže zjistit jeho effective-state source/evidence nebo explicitně označit unverified boundary,
 - stejná session nedostane právo na jinou roli pouhým handoffem nebo změnou Issue state; explicit reassignment je nutný,
 - automated run bez unambiguous role assignment se nespustí,
 - první již autorizovaný run pro danou authority/purpose se nesmí potlačit jen proto, že ještě neexistuje applicable completed run/fingerprint; všechny ostatní lifecycle/gate/terminal/active-role guards však stále platí,

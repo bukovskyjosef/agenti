@@ -55,6 +55,8 @@ Blokující nebo pořadové závislosti; případně explicitně `None`.
 ### Canonical references
 Autoritativní dokumenty, rozhodnutí a kontrakty relevantní pro práci.
 
+Pokud contract závisí na product/domain semantics, references musí vést k current upstream authority podle semantic authority mapy. Pokud závisí na current effective runtime/platform factu, musí odkazovat také declared effective-state source/evidence nebo explicitně uvést unverified boundary.
+
 ### Responsible role
 Role aktuální executable fáze. Toto pole popisuje požadovanou authority function; samo o sobě nedává žádné session právo roli převzít. Konkrétní role-bound session/run musí dostat explicitní active-role assignment podle `roles.md`.
 
@@ -94,6 +96,7 @@ Executable work item je Ready pouze pokud:
 - acceptance criteria jsou testovatelná,
 - dependencies a constraints jsou známé,
 - canonical references jsou uvedené,
+- autorizované upstream product/domain intent, requirements a semantics jsou dostatečně konkrétní, aby implementation nemusela vymýšlet nové product meaning nebo observable behavior,
 - responsible role je známá,
 - required control gates jsou explicitní,
 - concurrency/shared surfaces jsou deklarované,
@@ -102,6 +105,8 @@ Executable work item je Ready pouze pokud:
 - kompetentní nová instance může začít pouze z repo/GitHub stavu.
 
 Analyst nesmí označit Issue Ready jen proto, že existuje nebo obsahuje vyplněnou šablonu.
+
+Pokud upstream product/domain inputs zůstávají příliš abstraktní, ambiguous nebo incomplete k určení autorizovaného behavior bez přidání vlastního pravidla, work item **není implementation-ready**. Vrací se do Analysis/shaping a podle povahy chybějící authority použije canonical state nebo Human Input Request/Decision. Developer nesmí tuto mezeru uzavřít zavedením přísnějšího, alternativního nebo jinak odlišného product/domain constraintu; běžná technická rozhodnutí zůstávají v jeho autoritě pouze uvnitř již autorizovaného semantic envelope.
 
 Human input se může stát nutným i po `Ready`; tehdy vzniká cross-cutting request níže a Ready se znovu vyhodnotí pouze tehdy, pokud Human odpověď změnila vstupy Ready kontraktu.
 
@@ -180,6 +185,23 @@ Pending request blokuje pouze dotčený přechod. Pokud žádný jiný nezávisl
 
 Po resolution se pokračuje podle `delivery-cycle.md`: current state se znovu načte, Request ID/status/binding se ověří a workflow se vrátí na nejdříve dotčený bod. Asistentka durable zaznamenává explicitní Human resolution; pokud resolution mění analytický executable contract, Analyst provede potřebnou derivaci/mutaci před dalším Ready/next-step rozhodnutím.
 
+## Lossless consolidation / supersession
+
+Když jeden authoritative work item nahrazuje nebo konsoliduje jeden či více existujících work items, existence replacementu sama není důkaz, že jejich autorizované obligations přežily.
+
+Před tím, než source work může být uzavřen/označen duplicate nebo `Stopped` jako `SUPERSEDED_OR_OBSOLETE`, musí být durable rekonstruovatelné:
+
+1. všechny source work items,
+2. pro každý stále autorizovaný requirement, acceptance criterion, Human decision, blocker/dependency nebo jinou obligation potřebnou budoucí prací buď:
+   - jeho zachování přímo v replacement contractu, nebo
+   - durable reference na jeho current canonical source z replacementu,
+3. u obligation, která se záměrně nepřenáší, explicitní disposition a authority odpovídající běžným scope/Human-authority pravidlům,
+4. source → replacement a replacement → source traceability dostatečná pro cold-start reconstruction.
+
+Consolidation/replacement samo nevytváří authority zahodit scope, requirement nebo decision. Teprve po dokončení tohoto mappingu mohou source items přejít do existing duplicate/superseded/`Stopped` semantics podle lifecycle/project policy.
+
+Toto pravidlo nevytváří mandatory master Issue, Epic ani consolidation phase. Použije se pouze tam, kde skutečné replacement/consolidation nastává; výsledný replacement pak pokračuje normálním shaping/Ready/review/release flow.
+
 ## Stop record
 
 `Stopped` je durable non-success terminal semantic work itemu. Není to synonymum pro temporary `Blocked`.
@@ -196,11 +218,11 @@ Stop record musí být z authoritative state rekonstruovatelný a obsahuje alesp
 - stručnou durable evidence/rationale,
 - authority/reference, která stop autorizuje,
 - timestamp/reference transitionu,
-- u supersession odkaz na authoritative replacement/current work item, pokud existuje.
+- u supersession odkaz na authoritative replacement/current work item a rekonstruovatelný lossless source→replacement mapping podle oddílu výše.
 
 Human/Product Owner autorizuje intentional abandonment product intentu/scope/candidate. Specializované role smějí vytvořit evidence a recommendation, ale samy nesmějí nejistotu nebo neúspěch převést na abandonment.
 
-`SUPERSEDED_OR_OBSOLETE` smí orchestrace zapsat deterministicky bez nové Human odpovědi pouze pokud authoritative replacement/current work item už durable existuje **a** project policy explicitně dovoluje automatic supersession pro tento případ. Jinak je potřeba Human authority.
+`SUPERSEDED_OR_OBSOLETE` smí orchestrace zapsat deterministicky bez nové Human odpovědi pouze pokud authoritative replacement/current work item už durable existuje, lossless mapping všech stále autorizovaných obligations je rekonstruovatelný **a** project policy explicitně dovoluje automatic supersession pro tento případ. Jinak je potřeba Human authority nebo dokončení mappingu; automation nesmí source předčasně terminalizovat.
 
 `Stopped` work nesmí pokračovat z delayed eventu, retrye ani starého queued runu. Reopen/resume vyžaduje explicitní authorized reopen/current-state transition; původní event nebo odstranění příčiny samo work item znovu neaktivuje.
 

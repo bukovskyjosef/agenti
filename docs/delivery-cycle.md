@@ -87,6 +87,8 @@ Release authorization se nemá modelovat přidáním mnoha Issue stavů; je to s
 
 Parent Intent není nový lifecycle stav a neprochází implementací. Každý executable child prochází normální `Analysis → Ready → ...` lifecycle samostatně. Technická velikost ani počet popsatelných sub-outcomes samy decomposition nevyžadují.
 
+`Ready` zároveň vyžaduje dostatečně konkrétní autorizovaný upstream product/domain contract podle `work-item.md`. Pokud by implementation musela sama doplnit product meaning, pravidlo, constraint nebo observable behavior, flow zůstává/vrací se do `Analysis` a podle chybějící authority případně do Human-input/decision subflow; Developer tuto mezeru nesmí uzavřít technickým rozhodnutím.
+
 ### Parent Intent completion
 
 Při každé změně terminal/completion-relevant state required child nebo explicitní parent-level condition orchestrace re-evaluuje Parent Intent podle `work-item.md`.
@@ -264,7 +266,7 @@ Taxonomy musí pokrývat alespoň:
 
 - Human/Product Owner autorizuje intentional abandonment product intentu/scope/candidate.
 - Specialized role smí zaznamenat evidence a recommend `Stopped`, ale nesmí sama převést uncertainty/failure na abandonment.
-- `SUPERSEDED_OR_OBSOLETE` smí orchestrace zapsat deterministicky bez nové Human odpovědi pouze pokud authoritative replacement/current work item už durable existuje a project policy explicitně automatic supersession pro daný případ dovoluje.
+- `SUPERSEDED_OR_OBSOLETE` smí orchestrace zapsat deterministicky bez nové Human odpovědi pouze pokud authoritative replacement/current work item už durable existuje, lossless source→replacement mapping všech stále autorizovaných obligations podle `work-item.md` je rekonstruovatelný a project policy explicitně automatic supersession pro daný případ dovoluje.
 
 ### Terminal guard
 
