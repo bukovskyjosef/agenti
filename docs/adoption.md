@@ -17,7 +17,7 @@ Než něco vytvoříš:
 - zjisti branch a release model,
 - zjisti CI/CD, environments a deployment platformu,
 - najdi existující Issues/PR conventions,
-- zjisti, jak jsou canonical roles mapované na Human/provider/runner/session a jak se role explicitně aktivují,
+- zjisti, jak jsou canonical H/A/D/R/P role mapované na provider/runner/session, jak se role explicitně aktivují a jak jsou implementované Asistentka + O,
 - zjisti, jak se dnes potlačují duplicate/no-op role runs a jak se eviduje retry/non-convergence,
 - odstraň nebo explicitně vyřeš konkurenční zdroje pravdy místo jejich slepého duplikování.
 
@@ -33,7 +33,7 @@ Repository / authoritative control plane:
 Product intent / context authority:
 Canonical documentation / semantic authority map:
 Effective-state evidence / declared→effective equivalence for relevant surfaces:
-Human / Product Owner:
+Human authority identity / allowed Human principals:
 Production-authoritative boundary / boundaries:
 Task branch policy:
 PR target policy:
@@ -43,9 +43,21 @@ Deployment trigger:
 Environments:
 Post-release verification minimum:
 Retry / rollback / recovery authority:
-Role → provider / runner / session mapping:
-Explicit role assignment / transition mechanism:
-Pre-dispatch semantic fingerprint / run-eligibility / dedup mechanism:
+Asistentka / Human-interface implementation:
+Orchestrator implementation: Actions-centric | external GitHub App/service | hybrid | equivalent
+O event subscriptions / wake-up mechanism:
+O durable dedup / CAS / semantic fingerprint mechanism:
+A runner / provider / session mapping:
+D runner / provider / session mapping:
+R runner / provider / session mapping:
+P runner / tooling mapping:
+Explicit role assignment / transition encoding:
+Independent-R enforcement mechanism:
+Role completion → O callback / dispatch mechanism:
+Publication boundary operations owned by P:
+P credentials / secrets boundary:
+Post-publication verification contract:
+Optional independent post-publication R gate:
 Concurrency / shared-surface conventions:
 Target-drift policy after release approval:
 Deterministic automatic supersession policy: explicit rule | disabled
@@ -81,20 +93,24 @@ Pro surface, kde se versioned declaration může lišit od skutečného platform
 - pokud autorizovaná role effective source nemůže inspectovat, zaznamená unverified boundary/blocker místo tvrzení equivalence,
 - projekt s deterministickou Git→effective-state equivalence může tuto vazbu deklarovat jednou a nemusí zavádět recurring manual inspection.
 
-### Role mapping invariant
+### Role/system-function mapping invariant
 
-Role mapping nesmí předpokládat, že každý canonical role name = nová modelová session. Jedna technická/modelová session může být znovu použita pro sekvenční kompatibilní role, pokud:
+Project Profile rozlišuje authority roles od system functions:
 
-- v každém okamžiku má právě jednu explicitně aktivní roli,
-- každá role transition je explicitní Human/durable orchestration assignment,
-- provider/runner oprávnění odpovídají aktivní roli,
-- mandatory independence je zachována; zejména author a independent Reviewer jsou různé logical instances.
+- canonical role jsou právě H/A/D/R/P,
+- Asistentka je Human interface a nevybírá next role,
+- O je jediný mechanical dispatcher/control plane,
+- A/D/R/P run má právě jednu explicitní active role,
+- H nebo O vytváří explicit role assignment; runner si roli neinferuje,
+- compatible session reuse je možný jen po explicit reassignmentu,
+- mandatory independence zůstává: D/author a independent R jsou různé logical instances,
+- P publication context má oddělené privileged credentials a nesmí být D/R authority.
 
-Pokud automated run nemá jednoznačný active-role assignment, je to configuration blocker a provider/model se nesmí spustit.
+Pokud automated run nemá jednoznačný active-role assignment, provider/model se nespustí. O/Asistentka se nesmí maskovat jako delivery role jen proto, že jejich implementation používá AI/provider session.
 
 ### Run-eligibility invariant
 
-Project Profile musí určit provider-neutral mechanismus, kterým orchestrace před drahým role runem vyhodnotí relevantní semantic state fingerprint a případný poslední applicable completed run stejné authority/purpose. Může jít o durable content/version tuple, hash nebo ekvivalentní deterministický mechanismus.
+Project Profile musí určit provider-neutral mechanismus, kterým O před drahým role runem vyhodnotí relevantní semantic state fingerprint a případný poslední applicable completed run stejné authority/purpose. Může jít o durable content/version tuple, hash nebo ekvivalentní deterministický mechanismus.
 
 Mechanismus musí explicitně rozlišit:
 
@@ -122,8 +138,8 @@ Multi-repo binding musí zajistit, že:
 - každý implementation PR/change proposal odkazuje na jeden autoritativní work item v control repository,
 - autoritativní work item drží reverse links na všechny participating implementation PRs/change proposals,
 - přesná reviewed candidate identity každého participating repository je durable dohledatelná,
-- Integrator function od okamžiku multi-repo product-level aggregation mechanicky vlastní/current CAS-updatuje composite candidate binding v control repository ještě před product-level approval/release authorization,
-- product-level integration/release state je rekonstruovatelný z control repository bez kopírování repository-local technické evidence,
+- O od okamžiku multi-repo product-level aggregation mechanicky vlastní/current CAS-updatuje composite candidate binding v control repository ještě před product-level approval/release authorization,
+- product-level publication/release state je rekonstruovatelný z control repository bez kopírování repository-local technické evidence,
 - změna implementation repository nebo jeho candidate identity invaliduje/re-evaluuje předchozí composite candidate podle pravidel `delivery-cycle.md`.
 
 Pokud některá nutná volba není z projektu zřejmá, nevymýšlej ji — vytvoř Human decision gate.
@@ -161,7 +177,7 @@ V `multi-repo` patří product-level governance, Project Profile a autoritativn�
 Má být krátký router, ne druhá specifikace. Musí agentovi říct:
 
 1. přečti autoritativní work item,
-2. ověř, že máš právě jednu explicitně aktivní canonical role z Human/durable orchestration assignmentu; roli si neodvozuj a sám ji neměň,
+2. ověř, že máš právě jednu explicitně aktivní canonical H/A/D/R/P role z H nebo durable O assignmentu; roli si neodvozuj a sám ji neměň,
 3. načti relevantní canonical docs podle semantic authority mapy a respektuj jejich fact-domain-scoped authority/currentness,
 4. ověř lifecycle/terminal state/Ready/dependencies/concurrency,
 5. pokud je pro aktuální contract/gate materiální effective runtime/platform fact, použij jeho declared effective-state source/evidence nebo zaznamenej unverified boundary,
@@ -184,10 +200,10 @@ V `single-repo` vytvoř Issue template/form odpovídající `work-item.md` a PR 
 - decision gates,
 - Human Input Requests/resolutions,
 - exact candidate/head SHA pro review/release,
-- durable Reviewer/Tester/Integrator handoff,
+- durable D/R/P outputs + O bindings,
 - durable `Stopped` reason/evidence/authority/replacement binding tam, kde work item terminal non-success používá.
 
-V `multi-repo` je autoritativní Issue template/form pouze v control repository. PR template v každém implementation repository musí podporovat link na autoritativní work item. Control work item drží product-level reverse links, Human Input Requests/resolutions, current Integrator-owned composite candidate binding a release/integration state; repository-local checks, review a technická evidence mohou zůstat v implementation repository a být z control state pouze odkazované.
+V `multi-repo` je autoritativní Issue template/form pouze v control repository. PR template v každém implementation repository musí podporovat link na autoritativní work item. Control work item drží product-level reverse links, Human Input Requests/resolutions, current O-owned composite candidate binding a release/publication state; repository-local checks, review a technická evidence mohou zůstat v implementation repository a být z control state pouze odkazované.
 
 Template je provozní pomůcka; kanonický význam polí vlastní projektová dokumentace.
 
@@ -205,7 +221,7 @@ task branch
 
 Nepřidávej `develop`, release train nebo environment matrix bez konkrétní potřeby.
 
-V `multi-repo` může mít každý implementation repository vlastní nejjednodušší bezpečnou branch/PR policy; Project Profile musí zároveň určit, jak se jejich immutable candidate identities skládají do jednoho product-level candidate. Integrator function tento binding udržuje od pre-approval aggregation až po integration/release.
+V `multi-repo` může mít každý implementation repository vlastní nejjednodušší bezpečnou branch/PR policy; Project Profile musí zároveň určit, jak se jejich immutable candidate identities skládají do jednoho product-level candidate. O tento binding udržuje od pre-approval aggregation až po P publication/release completion.
 
 Chraň production-authoritative boundary nebo boundaries tak, aby je nebylo možné běžně měnit mimo definované gates.
 
@@ -218,7 +234,7 @@ Project Profile musí říct, zda Human release authorization platí:
 - pouze pro vybraná environments,
 - nebo není požadována.
 
-Pokud je požadována, implementuj exact-candidate binding a stale semantics z `delivery-cycle.md`. U `multi-repo` se approval váže na celý current Integrator-owned composite candidate, nikoli nezávisle na neúplný subset jeho participating repositories.
+Pokud je požadována, implementuj exact-candidate binding a stale semantics z `delivery-cycle.md`. U `multi-repo` se approval váže na celý current O-owned composite candidate, nikoli nezávisle na neúplný subset jeho participating repositories.
 
 Generic Human Input Request nesmí být použit jako levnější náhrada release authorization tam, kde ji Project Profile vyžaduje.
 
@@ -229,24 +245,35 @@ Human `REJECTED` release approval není automaticky terminal. Pokud Human zárov
 Doporučené pořadí:
 
 1. přesný Issue/work contract,
-2. explicit role assignment + durable Developer → Reviewer handoff,
+2. explicit role assignment + durable D → R handoff,
 3. CI/checks,
 4. write/transition CAS/idempotence,
 5. pre-dispatch semantic run eligibility/dedup,
-6. automatický Analyst/Developer/Reviewer routing přes jedinou orchestration function,
+6. automatický A/D/R/P routing přes jediný O control plane,
 7. generic Human-input queue + safe interrupt/resume,
 8. Human decision queue přes Asistentku jako interface/transport,
 9. Human release queue,
-10. multi-repo Integrator composite binding, pokud je relevantní,
-11. automatic integration/deployment + verification + guarded close-out.
+10. multi-repo O composite binding, pokud je relevantní,
+11. P publication/deployment execution + publication-specific verification,
+12. optional post-publication R gate + O guarded close-out.
 
 Vyšší autonomie se zapíná až tehdy, když nižší vrstva zachovává scope, authority, explicit active roles, durable state, run/write idempotence a bezpečný resume po Human input.
+
+### Proportional orchestration profile
+
+Project může implementovat stejný O contract různě podle velikosti:
+
+- **small single-repo:** Actions-centric O je doporučený low-ceremony pattern; explicit dispatch/reusable workflows + durable GitHub state jsou dostačující, pokud guards/least privilege platí,
+- **full/multi-repo:** hybrid GitHub durable state/events + GitHub App/webhook O + Actions deterministic checks/P jobs je doporučený robustní reference pattern,
+- GitHub Agentic Workflows mohou být optional current runner adapter; protože jsou public preview a nejsou provider-universal, standard je nevyžaduje.
+
+Event recursion, workflow ordering ani concurrency queue nejsou authority model. Každý relevantní event pouze probouzí O k fresh reconstruction.
 
 ## 9. Bootstrap validation
 
 Projekt je připravený, pokud nová agentní instance dostane například pouze:
 
-> Jsi Reviewer. Pracuj na Issue #N. Řiď se repozitářem.
+> Jsi R. Pracuj na Issue #N. Řiď se repozitářem.
 
 …a dokáže bez externího chatu zjistit relevantní kontrakt, svou explicitně aktivní roli, role boundaries, evidence, next action a místo durable handoffu.
 
@@ -256,6 +283,8 @@ Musí zároveň platit:
 - technical/executable artifact není považován za product/domain authority jen proto, že je executable/enforced,
 - historical/snapshot/superseded material není používán jako current truth bez explicitní reactivation/reassignment,
 - pokud je effective runtime/platform fact materiální pro aktuální contract/gate, agent dokáže zjistit jeho effective-state source/evidence nebo explicitně označit unverified boundary,
+- cold-start agent rozliší H/A/D/R/P role od Asistentka/O functions,
+- Asistentka ani event handler nemohou vybrat next role; O je jediný dispatcher,
 - stejná session nedostane právo na jinou roli pouhým handoffem nebo změnou Issue state; explicit reassignment je nutný,
 - automated run bez unambiguous role assignment se nespustí,
 - první již autorizovaný run pro danou authority/purpose se nesmí potlačit jen proto, že ještě neexistuje applicable completed run/fingerprint; všechny ostatní lifecycle/gate/terminal/active-role guards však stále platí,
@@ -265,6 +294,6 @@ Musí zároveň platit:
 
 Pokud v libovolné fázi vznikne blocking Human Input Request, musí fresh instance z autoritativního work itemu bez private-chat kontextu zjistit Request ID/type/status, přesný požadavek, context binding, Human response/evidence, resume point a které předchozí gates je nutné znovu vyhodnotit.
 
-U `multi-repo` musí navíc agent spuštěný v libovolném participating repository bez domýšlení zjistit, který repository je control plane, kde leží autoritativní work item a Human decisions/responses, které implementation repositories jsou v daném work itemu zapojené, jaké PRs/change candidates tvoří aktuální product-level candidate a že Integrator function vlastní current composite binding.
+U `multi-repo` musí navíc agent spuštěný v libovolném participating repository bez domýšlení zjistit, který repository je control plane, kde leží autoritativní work item a Human decisions/responses, které implementation repositories jsou v daném work itemu zapojené, jaké PRs/change candidates tvoří aktuální product-level candidate a že O vlastní current composite binding.
 
-Pokročilý test: běžný work item projde od Human intake přes Analysis, Developer, Review a release až do produkce bez ručního přeposílání agentních reportů člověkem; Human vstupuje pouze tam, kde je skutečně potřeba Human input, intentional termination/reopen authority nebo configured release authorization. Po Human response dokáže workflow pokračovat deterministicky z durable state i v nové agentní session.
+Pokročilý test: běžný work item projde od H intake přes A → D → R → optional H release authorization → P → O Done bez ručního přeposílání agentních reportů člověkem; H vstupuje pouze tam, kde je skutečně potřeba H-owned input, intentional termination/reopen authority nebo configured release authorization. Po durable H response dokáže O workflow deterministicky obnovit i v nové agentní session.

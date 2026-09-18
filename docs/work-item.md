@@ -58,12 +58,12 @@ Autoritativní dokumenty, rozhodnutí a kontrakty relevantní pro práci.
 Pokud contract závisí na product/domain semantics, references musí vést k current upstream authority podle semantic authority mapy. Pokud závisí na current effective runtime/platform factu, musí odkazovat také declared effective-state source/evidence nebo explicitně uvést unverified boundary.
 
 ### Responsible role
-Role aktuální executable fáze. Toto pole popisuje požadovanou authority function; samo o sobě nedává žádné session právo roli převzít. Konkrétní role-bound session/run musí dostat explicitní active-role assignment podle `roles.md`.
+Role aktuální executable fáze používá canonical vocabulary **H/A/D/R/P**. O a Asistentka jsou systémové funkce, ne Responsible role. Pole popisuje požadovanou authority; samo o sobě nedává session právo roli převzít. Konkrétní A/D/R/P run musí dostat explicitní active-role assignment od H nebo O podle `roles.md`.
 
 ### Required control gates
 Např. Independent Review, Review + Verification nebo projektově definovaná brána.
 
-Minimální invariant: změna kódu, konfigurace, dat, šablon nebo kanonické dokumentace vyžaduje nezávislé Review. Samostatný Tester není univerzálně povinný.
+Minimální invariant: změna kódu, konfigurace, dat, šablon nebo kanonické dokumentace vyžaduje independent R. Author-side validation vlastní D; deterministic tests/checks jsou control gates. Pokud work contract vyžaduje independent behavioral verification, je to R activity/run se stejnou independence boundary.
 
 ### Validation
 Jak má být výsledek ověřen.
@@ -137,7 +137,7 @@ Preferuj native GitHub parent/sub-issue relationship. Pokud v daném GitHub setu
 
 Změna terminal/completion-relevant state required child nebo explicitní parent-level condition je trigger pro orchestration re-evaluation Parent Intentu.
 
-Orchestrace:
+O:
 
 1. znovu načte authoritative Parent Intent, aktuální child set a relevantní durable completion evidence,
 2. ověří, že parent není `Stopped` a že re-evaluation stále odpovídá current parent/child bindings,
@@ -202,6 +202,33 @@ Consolidation/replacement samo nevytváří authority zahodit scope, requirement
 
 Toto pravidlo nevytváří mandatory master Issue, Epic ani consolidation phase. Použije se pouze tam, kde skutečné replacement/consolidation nastává; výsledný replacement pak pokračuje normálním shaping/Ready/review/release flow.
 
+## Human instruction conflict / override record
+
+Pokud aktivní A/D/R/P role obdrží H instrukci, která koliduje s current work contractem, required gate, role boundary nebo governing protocol, nesmí ji potichu vykonat. Konfliktní akce se zastaví pouze v nutném rozsahu a durable state musí před pokračováním reprezentovat skutečnou H změnu.
+
+Klasifikace používá nejpřesnější applicable typ:
+
+- `TASK_CONTRACT_CHANGE` — Goal/Scope/Requirements/AC/constraint/parent input,
+- `GOVERNANCE_CHANGE` — změna governing project policy/invarianty,
+- `POLICY_EXCEPTION` — one-off exception pouze pokud current policy explicitně definuje takovou exception authority,
+- `ROLE_REASSIGNMENT` — explicitní změna active role/session bez změny product contractu,
+- `RELEASE_AUTHORIZATION` — specialized exact-candidate/target approval,
+- `STOP_OR_REOPEN` — intentional abandonment/reopen,
+- `HUMAN_ACTION` — access/external action bez semantic authority change.
+
+Durable record musí identifikovat affected work/policy/candidate, konfliktní current rule/contract, explicitní H resolution/authority a případný resume point. Platí:
+
+- task-contract mutation analyticky odvozuje A; D/R/P ji ze soukromého chatu samy nepřepisují,
+- governance change se promítne přes canonical governance path před dependent execution,
+- policy exception je validní pouze tam, kde ji current policy dovoluje; jinak je nutná governance change,
+- role reassignment nesmí obejít mandatory independence,
+- release authorization používá existing exact-candidate `GRANTED/REJECTED/STALE` semantics,
+- stop/reopen používá existing Stop/reopen record,
+- Human action zaznamenává pouze safe completion evidence, nikdy secrets.
+
+Po durable mutation O vždy fresh-read rekonstruuje current state a určí earliest valid next transition. Handoff ani private-chat potvrzení samo není executable authority.
+
+
 ## Stop record
 
 `Stopped` je durable non-success terminal semantic work itemu. Není to synonymum pro temporary `Blocked`.
@@ -220,41 +247,44 @@ Stop record musí být z authoritative state rekonstruovatelný a obsahuje alesp
 - timestamp/reference transitionu,
 - u supersession odkaz na authoritative replacement/current work item a rekonstruovatelný lossless source→replacement mapping podle oddílu výše.
 
-Human/Product Owner autorizuje intentional abandonment product intentu/scope/candidate. Specializované role smějí vytvořit evidence a recommendation, ale samy nesmějí nejistotu nebo neúspěch převést na abandonment.
+Human autorizuje intentional abandonment product intentu/scope/candidate. Specializované role smějí vytvořit evidence a recommendation, ale samy nesmějí nejistotu nebo neúspěch převést na abandonment.
 
-`SUPERSEDED_OR_OBSOLETE` smí orchestrace zapsat deterministicky bez nové Human odpovědi pouze pokud authoritative replacement/current work item už durable existuje, lossless mapping všech stále autorizovaných obligations je rekonstruovatelný **a** project policy explicitně dovoluje automatic supersession pro tento případ. Jinak je potřeba Human authority nebo dokončení mappingu; automation nesmí source předčasně terminalizovat.
+`SUPERSEDED_OR_OBSOLETE` smí O zapsat deterministicky bez nové Human odpovědi pouze pokud authoritative replacement/current work item už durable existuje, lossless mapping všech stále autorizovaných obligations je rekonstruovatelný **a** project policy explicitně dovoluje automatic supersession pro tento případ. Jinak je potřeba Human authority nebo dokončení mappingu; automation nesmí source předčasně terminalizovat.
 
 `Stopped` work nesmí pokračovat z delayed eventu, retrye ani starého queued runu. Reopen/resume vyžaduje explicitní authorized reopen/current-state transition; původní event nebo odstranění příčiny samo work item znovu neaktivuje.
 
 ## Repository binding
 
-`single-repo` nepřidává žádná per-work-item topology metadata; Project Profile určuje, že control i implementation jsou ve stejném repository.
+`single-repo` nepřidává per-work-item topology metadata; Project Profile určuje, že control i implementation jsou ve stejném repository.
 
-V `multi-repo` musí autoritativní executable work item v control repository během delivery durable udržovat:
+V `multi-repo` musí authoritative executable work item v control repository během delivery durable udržovat:
 
 - participating implementation repositories,
 - reverse links na každý implementation PR/change proposal,
-- přesnou immutable candidate identity každého participating repository, jakmile vznikne,
-- odkazy na required repository-local review/check/test evidence,
-- product-level technical approval, release authorization a integration/release state pro aktuální composite candidate,
-- všechny product-level Human Input Requests a jejich Human resolutions.
+- exact immutable candidate identity každého participating repository, jakmile vznikne,
+- odkazy na required repo-local D/R/check evidence,
+- current product-level composite candidate binding,
+- technical approval, release authorization a publication state pro current composite candidate,
+- product-level Human Input Requests a H resolutions.
 
-Od okamžiku, kdy se více repo-local candidates musí posuzovat jako jeden product candidate, **Integrator** vlastní mechanickou product-level composite-candidate control-plane state: sestavuje a CAS-updatuje repo-qualified immutable candidate mapu, participating membership, reverse links a odkazy na local evidence. Tuto state udržuje už před product-level technical approval/release authorization a znovu ji validuje při každé relevantní local změně.
+Od okamžiku, kdy se více repo-local candidates musí posuzovat jako jeden product candidate, **O** mechanicky vlastní current product-level composite-candidate control-plane state: sestavuje/CAS-updatuje repo-qualified candidate mapu, membership, reverse links a odkazy na local evidence; při každé relevantní local změně binding znovu rekonstruuje a revaliduje.
 
-Local Developer/Reviewer nadále vlastní repository-local implementation/review/check evidence. Integrator ji agreguje odkazem a nesmí ji falšovat, waive nebo z její existence sám odvodit product/release authority.
+Repo-local D/R zůstávají vlastníky implementation/review evidence. O evidence pouze odkazuje a nesmí ji falšovat, waive ani z ní odvodit product/release authority.
 
-Každý implementation PR/change proposal musí zpětně odkazovat na tento autoritativní work item. Repository-local evidence zůstává ve svém implementation repository; control work item ji odkazuje místo vytváření druhé kopie. Human request vzniklý z implementation PR/run musí v context binding odkazovat přesnou repo-local evidence zpět z control work itemu.
+Každý implementation PR/change proposal odkazuje zpět na authoritative control work item. Změna participating repository, proposalu, candidate identity nebo relevantní evidence probudí O; affected gates se re-evaluují podle exact-candidate/stale/earliest-affected-point pravidel.
 
-Pokud se změní participating repository, PR/change proposal nebo candidate identity, Integrator znovu sestaví/revaliduje product-level binding a affected gates se posoudí podle exact-candidate/stale pravidel v `delivery-cycle.md`. Stejně tak se každý Human Input Request znovu posuzuje proti svému context binding.
+P po splnění required controls a případné H release authorization provádí configured coordinated publication plan přes relevantní boundaries a zapisuje actual published identities/partial failures. O následně z těchto durable outputs rekonstruuje product-level completion.
 
 ## Handoff destinations
 
-- Asistentka zachycuje Human intent a durable zapisuje explicitní Human answers/authorizations do autoritativního work itemu; analytický work contract z nich neodvozuje.
-- Analyst vlastní a aktualizuje analytický authoritative work contract, decomposition a Ready semantics.
-- Developer předává implementaci přes PR + commit(s) v příslušném implementation repository; v `multi-repo` PR odkazuje na autoritativní control-repository Issue.
-- Reviewer zapisuje durable PR review/comment k přesně reviewovanému candidate.
-- Tester zapisuje result proti přesnému testovanému headu/candidate.
-- Integrator v `multi-repo` vlastní product-level composite candidate binding/state už před approval a následně vlastní exact-candidate revalidation + integration/release evidence; repository-local evidence zůstává u local rolí.
-- Orchestration function je jediný dispatcher a mechanický owner deterministických lifecycle/completion transitionů, včetně Parent Intent roll-up a final executable `Done`, pokud jsou jejich deklarované podmínky objektivně splněné.
+- Asistentka zachycuje raw H intent a durable zapisuje explicitní H answers/authorizations proti správnému bindingu; analytický work contract z nich neodvozuje.
+- A vlastní a aktualizuje analytical authoritative work contract, decomposition a Ready semantics.
+- D vytváří exact candidate přes PR/change proposal a zapisuje author-side validation.
+- Deterministic tests/checks zapisují gate evidence bez vlastní role authority.
+- R zapisuje independent findings/review a případnou independent behavioral-verification evidence proti exact candidate.
+- O je jediný dispatcher, mechanický owner current multi-repo composite binding a deterministic lifecycle/completion transitions.
+- P zapisuje exact publication/promotion/deployment identities, publication-specific verification a failure/recovery evidence.
+- H zapisuje reserved product/governance/release/stop-reopen/override authority pouze durably a přes správný binding.
 
-Soukromý chatový kontext není handoff ani autoritativní Human response.
+Soukromý chatový kontext není handoff ani autoritativní H response. Předchozí handoff text je navigace; pokud koliduje s current durable state, current state vítězí a O znovu rekonstruuje next step.
+

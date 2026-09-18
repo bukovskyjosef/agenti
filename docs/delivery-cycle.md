@@ -3,50 +3,42 @@
 ## 1. Referenční tok
 
 ```text
-Human intent
+H intent
   ↓
 Asistentka → durable Intake capture
+  ↓ trigger only
+O → fresh state reconstruction + explicit A assignment
   ↓
-Orchestration → reconstruct state + explicit Analyst assignment
+A / Analysis
+  ├─ required H input → Human-input subflow → O → earliest affected point
+  ├─ decomposition → Parent Intent + executable child Issue(s) → A per child
+  └─ bounded executable contract → Ready
+       ↓ O
+D / In Progress
   ↓
-Analysis
-  ├─ required Human input
-  │    → Human-input interrupt/resume subflow
-  │    → orchestration reconstructs current state
-  │    → Analyst only if analytical contract mutation is required
-  ├─ decomposition required
-  │    → Parent Intent + executable child Issue(s)
-  │    → Analysis per child
-  └─ one bounded executable/reviewable contract → Ready
-        ↓
-Orchestration → explicit Developer assignment
-        ↓
-Developer / In Progress
-        ↓
-PR(s) + required local checks
-        ↓
-multi-repo only: Integrator maintains current product-level composite binding
-        ↓
-In Review / required control gates
-  ├─ DEFECT → Changes Required → objective-progress guard → Developer → re-review
-  ├─ DECISION_REQUIRED → Human-input interrupt/resume subflow (DECISION)
+exact candidate/PR + author validation + deterministic checks
+  ↓ events wake O
+O → reconstruct current candidate/evidence
+  ↓
+R / independent review + required independent behavioral verification
+  ├─ implementation DEFECT → O → D
+  ├─ upstream contract deficiency → O → A
+  ├─ DECISION_REQUIRED → Asistentka ↔ H → O
   └─ APPROVED
-        ↓
-Release authorization required by Project Profile?
-  ├─ no → Integrator
-  └─ yes → Human release queue → Asistentka ↔ Human
-                                      ↓ granted
-                                  Integrator
-                                      ↓
-                       production-authoritative boundary
-                                      ↓
-                               automatic deployment
-                                      ↓
-                         post-release verification
-                                      ↓
-                           orchestration close-out
-                                      ↓
-                                     Done
+       ↓ O
+Configured H release authorization?
+  ├─ no
+  └─ yes → exact candidate/composite → H → durable GRANTED → O
+       ↓
+P → immediate exact-candidate/gate revalidation
+  → configured merge/promotion/tag/release/deploy operations
+  → publication-specific deterministic checks/evidence
+       ↓
+Configured independent post-publication R gate?
+  ├─ yes → O → R → O
+  └─ no
+       ↓
+O → mechanical completion evaluation → Done
 ```
 
 Cross-cutting outcomes:
@@ -54,7 +46,9 @@ Cross-cutting outcomes:
 - `Blocked` — temporary/recoverable; current next step cannot proceed yet,
 - `Stopped` — durable non-success terminal; automatic continuation is forbidden until explicit authorized reopen.
 
-Human-input interrupt/resume může vzniknout v libovolné delivery fázi, ale pouze pokud další nutný krok skutečně vyžaduje Human input. Nevytváří povinný Human gate na každém přechodu.
+GitHub/durable event znamená pouze „authoritative state se mohl změnit“. Event probudí O, ale sám neurčuje roli, approval ani transition.
+
+Human-input interrupt/resume může vzniknout v libovolné fázi jen tehdy, pokud další nutný krok skutečně vyžaduje H input. H není routine message bus mezi A/D/R/P.
 
 ## 2. Work-item lifecycle
 
@@ -82,18 +76,18 @@ Release authorization se nemá modelovat přidáním mnoha Issue stavů; je to s
 `Analysis` vždy znovu určuje, zda aktuální Human intent bezpečně tvoří jeden executable delivery unit. Kanonické shaping/decomposition pravidlo vlastní `work-item.md`:
 
 1. jeden bounded executable/reviewable contract je možný → stejné Issue pokračuje k normálnímu `Ready`,
-2. chybí Human-owned input → existing Human Input Request / Decision subflow a po resolution state reconstruction; Analyst pokračuje jen pokud je potřeba analytical derivation/mutation,
+2. chybí Human-owned input → existing Human Input Request / Decision subflow a po resolution state reconstruction; A pokračuje jen pokud je potřeba analytical derivation/mutation,
 3. jeden coherent delivery unit není bezpečný → původní Issue se stává non-executable `Parent Intent` a vzniknou bounded executable child work items z již autorizovaného scope.
 
 Parent Intent není nový lifecycle stav a neprochází implementací. Každý executable child prochází normální `Analysis → Ready → ...` lifecycle samostatně. Technická velikost ani počet popsatelných sub-outcomes samy decomposition nevyžadují.
 
-`Ready` zároveň vyžaduje dostatečně konkrétní autorizovaný upstream product/domain contract podle `work-item.md`. Pokud by implementation musela sama doplnit product meaning, pravidlo, constraint nebo observable behavior, flow zůstává/vrací se do `Analysis` a podle chybějící authority případně do Human-input/decision subflow; Developer tuto mezeru nesmí uzavřít technickým rozhodnutím.
+`Ready` zároveň vyžaduje dostatečně konkrétní autorizovaný upstream product/domain contract podle `work-item.md`. Pokud by implementation musela sama doplnit product meaning, pravidlo, constraint nebo observable behavior, flow zůstává/vrací se do `Analysis` a podle chybějící authority případně do Human-input/decision subflow; D tuto mezeru nesmí uzavřít technickým rozhodnutím.
 
 ### Parent Intent completion
 
-Při každé změně terminal/completion-relevant state required child nebo explicitní parent-level condition orchestrace re-evaluuje Parent Intent podle `work-item.md`.
+Při každé změně terminal/completion-relevant state required child nebo explicitní parent-level condition O re-evaluuje Parent Intent podle `work-item.md`.
 
-Orchestrace smí parent přepnout na `Done` pouze pokud po fresh reconstruction current parent/children/evidence objektivně splňují jeho durable overall completion condition. Pokud condition vyžaduje novou interpretaci, změnu contractu nebo Human rozhodnutí, orchestrace pouze dispatchne správnou explicitní roli/Human-input flow; sama význam completion condition nerozšiřuje.
+O smí parent přepnout na `Done` pouze pokud po fresh reconstruction current parent/children/evidence objektivně splňují jeho durable overall completion condition. Pokud condition vyžaduje novou interpretaci, změnu contractu nebo Human rozhodnutí, O pouze dispatchne správnou explicitní roli/Human-input flow; sama význam completion condition nerozšiřuje.
 
 `Stopped` Parent Intent se child completion eventem neotevírá ani neuzavírá jiným způsobem. Duplicate/delayed event je pouze trigger k idempotentní state evaluation.
 
@@ -115,10 +109,10 @@ Generic interrupt probíhá takto:
 2. dotčený přechod se zastaví; work item se označí `Blocked`, pokud nezůstává jiná nezávislá autorizovaná práce,
 3. Asistentka/Human interface zobrazí request jako view nad durable state a Human odpověď/outcome/action durable zaznamená proti stejnému Request ID,
 4. request přejde na `RESOLVED`, nebo na `STALE`, pokud se jeho bound context mezitím změnil,
-5. orchestrace znovu načte autoritativní work item a linked current evidence,
+5. O znovu načte autoritativní work item a linked current evidence,
 6. ověří Request ID, status, context binding, terminal state, aktuální candidate/target identities a required gate validity,
-7. pokud explicitní Human response vyžaduje analytical derivation/mutation executable contractu, orchestrace explicitně přiřadí Analysta; Asistentka tuto derivaci neprovádí,
-8. znovu se vyhodnotí lifecycle, role a gates a orchestrace spustí právě jeden aktuálně autorizovaný next step od **nejdříve dotčeného bodu**.
+7. pokud explicitní Human response vyžaduje analytical derivation/mutation executable contractu, O explicitně přiřadí A; Asistentka tuto derivaci neprovádí,
+8. znovu se vyhodnotí lifecycle, role a gates a O spustí právě jeden aktuálně autorizovaný next step od **nejdříve dotčeného bodu**.
 
 Původní agentní session nemusí přežít. `RESOLVED` znamená pouze „požadovaný vstup byl dodán a current state se má znovu vyhodnotit“, nikoli „proveď starou continuation“.
 
@@ -151,33 +145,39 @@ Nevzniká parent-specific stale status ani druhý invalidation framework.
 
 ### Decision special case
 
-Reviewer `DECISION_REQUIRED` nebo jiný required Human-owned decision vytváří nebo odkazuje `PENDING` Human Input Request typu `DECISION`. Decision disposition popisuje důvod/autoritu; generic request zajišťuje durable otázku, guard a resume. Ani jedno samo neautorizuje pokračování bez explicitní Human response.
+R `DECISION_REQUIRED` nebo jiný required Human-owned decision vytváří nebo odkazuje `PENDING` Human Input Request typu `DECISION`. Decision disposition popisuje důvod/autoritu; generic request zajišťuje durable otázku, guard a resume. Ani jedno samo neautorizuje pokračování bez explicitní Human response.
+
+### Human conflict / override resume
+
+Když aktivní role obdrží H instrukci kolidující s current contractem/gatem/role boundary/governance, nejde o nový bypass transition. Role použije typed conflict/override semantics z `work-item.md` a konfliktní akci neprovede, dokud není H resolution správně durably bound.
+
+Po task-contract change O dispatchne A, pokud je potřeba analytical derivation/mutation. Governance change/exception musí být nejdřív validní podle current governance. Role reassignment musí být explicitní a nesmí obejít independence. Release authorization zůstává specialized exact-candidate gate. Po každé takové durable změně O rekonstruuje current state a pokračuje od earliest affected point; původní session nemá blanket continuation right.
 
 ## 4. Multi-repo composite candidate control plane
 
 V `single-repo` je candidate identity přímo v jednom repository/work itemu.
 
-V `multi-repo` začíná Integrator function vlastnit product-level composite-candidate binding **ještě před product-level approval**, jakmile se více repo-local candidates musí posuzovat jako jeden product candidate.
+V `multi-repo` O mechanicky vlastní current product-level composite-candidate binding **ještě před product-level approval**, jakmile se více repo-local candidates musí posuzovat jako jeden product candidate.
 
-Integrator mechanicky:
+O:
 
 1. načte participating implementation repositories a local change proposals z authoritative control work itemu,
-2. sestaví/CAS-updatuje immutable repo-qualified candidate mapu a repository membership,
-3. odkáže current local check/review/test evidence bez jejího kopírování,
-4. při změně kteréhokoli člena/evidence znovu sestaví binding a označí závislé product-level gates k re-evaluation podle jejich normálních pravidel,
-5. poskytuje current exact composite identity pro product-level technical approval a případný release authorization request.
+2. sestaví/CAS-updatuje immutable repo-qualified candidate mapu + membership,
+3. odkáže current local D/R/check evidence bez jejího kopírování,
+4. při změně kteréhokoli člena/evidence znovu sestaví binding a označí dependent product-level gates k re-evaluation,
+5. poskytne current exact composite identity pro R, případný H release authorization a P.
 
-Tato funkce je control-plane aggregation, nikoli approval. Integrator nesmí waive missing/failed local gates, měnit Scope/AC ani udělit release authorization.
+Tato činnost je deterministic control-plane aggregation, nikoli approval. O nesmí waive gates, měnit Scope/AC, vydat R judgment ani udělit H release authorization.
 
-Local Developer/Reviewer vlastní local implementation/evidence; Integrator vlastní product-level composite binding/state.
+Repo-local D/R vlastní local implementation/evidence. P až po splnění current gates a případné H release authorization provádí configured coordinated publication plan across boundaries a zapisuje actual published identities/partial failures.
 
 ## 5. Technical approval
 
-`Approved` znamená, že required review/test/check gates jsou pro aktuální candidate nebo composite candidate splněné a nezůstává blocking DEFECT, required decision gate ani jiný `PENDING` Human Input Request, který brání approval/integration.
+`Approved` znamená, že required R/check gates jsou pro current exact candidate nebo composite candidate splněné a nezůstává blocking DEFECT, required H decision ani jiný `PENDING` Human Input Request bránící publication path.
 
-U `multi-repo` lze product-level `Approved` vyhodnotit pouze proti current composite candidate, který Integrator mechanicky zrekonstruoval a jehož local evidence/gates jsou stále validní.
+U `multi-repo` lze product-level `Approved` vyhodnotit pouze proti current composite candidate mechanicky rekonstruovanému O a current local evidence/gates.
 
-Neznamená to automaticky oprávnění vydat do produkce.
+Technical approval není release authorization a nedává P právo publikovat, pokud Project Profile vyžaduje ještě H release gate.
 
 ## 6. Release authorization
 
@@ -214,40 +214,45 @@ Pouhý nový trigger nebo generic Human Input Request nesmí stale approval obno
 
 `REJECTED` znamená pouze zamítnutí aktuální release authorization. Pokud Human zároveň durable rozhodne, že nechce žádný další candidate/current intent pokračovat, work item přechází na Human-authorized `Stopped` s reason `RELEASE_REJECTED_NO_FURTHER_CANDIDATE`.
 
-## 7. Production-authoritative boundary
+## 7. Production-authoritative boundary a P publication
 
-Projekt explicitně určí, co je jeho production-authoritative boundary nebo boundaries: například `main`, release branch, tag nebo jiný immutable artifact.
+Project Profile určí production-authoritative boundary/boundaries a přesné publication operations vlastněné P: například merge, promotion, tag/release, deploy invocation nebo jiný already-authorized write.
 
-Pro malý kontinuálně vydávaný `single-repo` projekt je doporučený jednoduchý pattern:
+Pro malý kontinuálně vydávaný `single-repo` projekt je jednoduchý pattern:
 
 ```text
 task branch
   → PR
-  → CI + independent review
-  → Human release authorization
-  → merge to production-authoritative main
-  → automatic deploy
+  → CI + independent R
+  → optional H release authorization
+  → O explicit P assignment
+  → P merge/publish exact candidate
+  → configured deployment/publication checks
 ```
 
-V `multi-repo` může mít každý participating implementation repository vlastní production-authoritative boundary nebo může Project Profile určit společný publikovaný artifact boundary. V obou případech musí product-level release state zůstat navázaný na přesný composite candidate z oddílu výše.
+P před každým privileged publication write znovu ověří exact candidate/composite identity, target, required gates a current H release authorization, pokud je vyžadována. P nesmí substituovat candidate, waive gate, opravovat D candidate ani sám grantovat release authorization.
+
+V `multi-repo` může P vykonat koordinovaný publish plan přes více boundaries, ale všechny kroky musí být navázané na current composite candidate z O. Partial success/failure se zapisuje durably; O z něj znovu rekonstruuje next state.
 
 Standard nevyžaduje název `main` ani univerzální `develop` branch.
 
-## 8. Deployment, verification a Done
+## 8. Publication, post-publication verification a Done
 
-Pokud práce ovlivňuje produkci, Project Profile musí určit:
+Project Profile musí pro production-affecting work určit:
 
-- co deployment spouští,
-- cílové environment(s),
-- jak se potvrzuje úspěch deploymentu,
-- minimum post-release verification (např. health/readiness + bounded smoke),
-- kdo smí retry/rollback/recover.
+- publication/deployment trigger a target environments,
+- jak se potvrzuje exact published identity a úspěch deploymentu,
+- P-owned deterministic publication-specific checks (např. deployment completion, exact-version evidence, health/readiness, bounded smoke),
+- zda je navíc vyžadován independent post-publication R judgment,
+- kdo smí bounded retry/rollback/recover a za jakých podmínek.
 
-Production-affecting work není `Done`, dokud required deployment + verification neuspěje.
+Production-affecting work není `Done`, dokud všechny required publication + post-publication completion conditions neuspějí.
 
-Role/runner, který provede verification, zapíše durable evidence. Orchestrace po relevantním completion eventu znovu načte current work item/candidate/evidence a mechanicky zapíše `Done` pouze pokud jsou všechny deklarované success completion conditions splněné a work item není `Stopped`.
+P zapisuje publication/deployment/check evidence. Pokud Project Profile vyžaduje independent post-publication semantic/behavioral judgment, O explicitně dispatchne R; nevzniká nová canonical role.
 
-Pokud deployment/verification/recovery narazí na Human-only action nebo jiný legitimate Human input, použije stejný generic interrupt/resume contract; po resolution se znovu ověří candidate, target a relevantní gates před pokračováním.
+O po relevantním completion eventu fresh-readne current work item/candidate/evidence a mechanicky zapíše `Done` pouze pokud jsou všechny declared success conditions splněné a work item není `Stopped`. P samotný nesmí odvodit Done jen z úspěšného publish write.
+
+Human-only action nebo nový recovery trade-off používá existing Human-input/override semantics; po durable H resolution O znovu ověří candidate/target/gates a určí earliest affected point.
 
 ## 9. Stopped — non-success terminal
 
@@ -264,16 +269,16 @@ Taxonomy musí pokrývat alespoň:
 
 ### Authority
 
-- Human/Product Owner autorizuje intentional abandonment product intentu/scope/candidate.
+- Human autorizuje intentional abandonment product intentu/scope/candidate.
 - Specialized role smí zaznamenat evidence a recommend `Stopped`, ale nesmí sama převést uncertainty/failure na abandonment.
-- `SUPERSEDED_OR_OBSOLETE` smí orchestrace zapsat deterministicky bez nové Human odpovědi pouze pokud authoritative replacement/current work item už durable existuje, lossless source→replacement mapping všech stále autorizovaných obligations podle `work-item.md` je rekonstruovatelný a project policy explicitně automatic supersession pro daný případ dovoluje.
+- `SUPERSEDED_OR_OBSOLETE` smí O zapsat deterministicky bez nové Human odpovědi pouze pokud authoritative replacement/current work item už durable existuje, lossless source→replacement mapping všech stále autorizovaných obligations podle `work-item.md` je rekonstruovatelný a project policy explicitně automatic supersession pro daný případ dovoluje.
 
 ### Terminal guard
 
 Jakmile je work item `Stopped`:
 
 - delayed/replayed event, retry ani queued role run jej nesmí znovu spustit,
-- orchestrace nesmí dispatchnout další executable step,
+- O nesmí dispatchnout další executable step,
 - starý Human resolution/candidate/check event nesmí implicitně reopen,
 - resume/reopen vyžaduje explicitní authorized reopen/current-state transition a novou current-state reconstruction.
 
@@ -286,13 +291,13 @@ Další corrective/retry/recovery iteration je oprávněná pouze tehdy, pokud o
 
 Pouhý duplicate/no-op trigger, nové run ID nebo opakování stejného tvrzení není progress.
 
-Semanticky stejný unresolved Reviewer finding, Human request nebo blocker se znovu nepřepisuje pod novou identitou jen kvůli dalšímu pokusu; existing durable artifact se aktualizuje/resolvuje/stale označí podle current state.
+Semanticky stejný unresolved R finding, Human request nebo blocker se znovu nepřepisuje pod novou identitou jen kvůli dalšímu pokusu; existing durable artifact se aktualizuje/resolvuje/stale označí podle current state.
 
 Pokud loop opakovaně nedokáže vytvořit objektivní progress a neexistuje další již autorizovaný corrective/recovery path:
 
 1. další identický run se nespouští,
 2. non-convergence se zaznamená durable s current evidence a posledním validním state fingerprint/reason,
-3. orchestrace dispatchne existující autoritu schopnou rozhodnout next step (např. Analyst/Human podle povahy chybějící authority),
+3. O dispatchne existující autoritu schopnou rozhodnout next step (např. A/Human podle povahy chybějící authority),
 4. pokud Human rozhodne práci opustit, použije se `Stopped` reason `NON_CONVERGENT_ABANDONED`.
 
 Standard nevyžaduje univerzální počet retries. Konkrétní technická hranice může mít bounded retry policy v Project Profile, ale nesmí obejít tento progress/termination invariant.

@@ -1,254 +1,230 @@
 # Automation and event model
 
-Cílem je, aby běžný work item procházel rolemi bez Human relay, ale automatizace nikdy nepřevzala produktovou nebo release autoritu a nespouštěla drahé role runs bez objektivního důvodu.
+Cílem je, aby po H intentu durable GitHub state + eventy + **O = Orchestrator** automaticky pokračovaly autorizovaným H/A/D/R/P delivery chainem bez Human relay. Automatizace nikdy nepřebírá product/review/release authority.
 
-## 1. Trigger není autorita ani run eligibility
+## 1. Event pouze probouzí O
 
-Event pouze říká „stav se mohl změnit“. **Orchestration function je jediný canonical dispatcher.** Před dispatch znovu načte authoritative project GitHub/repository state podle Project Profile a ověří:
+GitHub event znamená pouze:
 
-- že work item není terminal `Stopped`,
-- že další krok je stále povolený current lifecycle/dependencies/gates,
-- že dispatchuje právě jednu explicitně aktivní canonical role,
-- že run splňuje pre-dispatch eligibility/dedup z oddílu 7.
+> **authoritative state se mohl změnit; proveď O re-evaluation.**
 
-Runner po startu stále musí před write akcí znovu ověřit current state a své authority boundaries; pre-dispatch guard nenahrazuje write-level CAS/idempotence.
+Event type, webhook payload, comment text ani předchozí handoff samy neurčují next role ani approval.
 
-To platí i pro Human response: `HUMAN_INPUT_RESOLVED` není příkaz „pokračuj“, ale pouze trigger k nové state reconstruction.
+O je jediný canonical dispatcher. Před každým transition/dispatch fresh-readne authoritative project state a ověří minimálně:
 
-U executable child work itemu zahrnuje authoritative state také aktuální `Parent Intent` a inherited parent authorization inputs, na které child durable odkazuje. Child trigger nesmí obejít pozdější parent změnu.
+- lifecycle + terminal `Stopped`,
+- dependencies a relevant Parent Intent inputs,
+- pending/stale H requests,
+- current exact candidate/composite binding,
+- required gates a material effective-state evidence,
+- explicit role assignment eligibility,
+- pre-dispatch fingerprint/run eligibility,
+- concurrency/CAS state.
 
-Asistentka může orchestration technicky invoke/present jako Human-facing interface, ale nevytváří druhé routing rozhodnutí.
+Role runner po startu znovu ověří current state před write; O guard nenahrazuje write-level CAS/idempotence.
 
 ## 2. Referenční event vocabulary
 
-Projekt může eventy mapovat na GitHub native state, labels, comments, checks, webhooks nebo jiný mechanismus. Nemá vytvářet duplicitní pseudo-ERP, pokud GitHub již pravdu reprezentuje.
+Projekt může state changes reprezentovat labels, comments, checks, reviews, webhooks nebo jiným GitHub mechanismem. Povinný není konkrétní event bus ani přesné názvy, ale systém musí umět rozlišit významy jako:
 
-Sémanticky musí umět rozlišit alespoň:
+- intake / analysis requested,
+- H input required/resolved/stale,
+- Ready / candidate updated,
+- checks passed/failed,
+- R approved/changes-required/decision-required,
+- release authorization pending/granted/rejected/stale,
+- publication requested/completed/failed,
+- deployment/post-publication verification completed/failed.
 
-- `INTAKE_CREATED`
-- `ANALYSIS_REQUESTED`
-- `HUMAN_INPUT_REQUIRED`
-- `HUMAN_INPUT_RESOLVED`
-- `READY_FOR_EXECUTION`
-- `IMPLEMENTATION_READY`
-- `CHECKS_PASSED` / `CHECKS_FAILED`
-- `REVIEW_APPROVED`
-- `REVIEW_CHANGES_REQUIRED`
-- `REVIEW_DECISION_REQUIRED`
-- `RELEASE_AUTH_REQUESTED`
-- `RELEASE_AUTH_GRANTED`
-- `RELEASE_AUTH_REJECTED`
-- `RELEASE_AUTH_STALE`
-- `INTEGRATION_REQUESTED`
-- `INTEGRATION_COMPLETED` / `INTEGRATION_FAILED`
-- `DEPLOYMENT_VERIFIED` / `DEPLOYMENT_FAILED`
+Adaptive shaping, Parent Intent roll-up, `Stopped` ani dedup nepotřebují vlastní event family. Authoritu určuje reconstructed state.
 
-Adaptive shaping/decomposition, `Stopped`, Parent Intent roll-up ani run dedup nevyžadují novou mandatory event family. Mohou být reprezentovány existujícím/native durable state a změnovými triggery; autoritu určuje reconstructed state, ne event name.
+## 3. Human-input semantics a Asistentka
 
-## 3. Human-input event semantics
+Asistentka prezentuje H queues jako views nad durable state a zapisuje explicitní H response/action/authorization proti exact request/gate bindingu. Není dispatcher.
 
-Generic Human Input Request contract vlastní `work-item.md`; resume a invalidation vlastní `delivery-cycle.md`.
+Po H state change Asistentka pouze notify/invoke O. O ověří Request ID/status/binding, current candidate/target, changed assumptions a earliest affected point. Pokud H response mění analytical contract, O explicitně dispatchne A; Asistentka Scope/AC/Ready sama nemění.
 
-`HUMAN_INPUT_REQUIRED` znamená, že existuje `PENDING` durable request a dotčený přechod nesmí pokračovat. Event musí být svázaný alespoň s autoritativním work itemem a Request ID; podle requestu také s relevantním repository/PR/candidate/target/run binding.
+Duplicate/delayed H event smí vyvolat cheap re-evaluation, ale nesmí znovu provést transition ani spustit no-op role run.
 
-`HUMAN_INPUT_RESOLVED` znamená, že request mohl získat durable Human resolution. Orchestrace/runner před pokračováním musí ověřit alespoň:
+## 4. Explicit H/A/D/R/P assignment a least privilege
 
-- authoritative work item identity/state,
-- Request ID a aktuální request status,
-- že request není `STALE` a jeho context binding stále odpovídá current state,
-- current candidate/PR/target identity tam, kde je relevantní,
-- validity required gates,
-- zda Human odpověď změnila canonical contract nebo assumptions některého předchozího gate,
-- zda response vyžaduje analytical contract mutation, a tedy explicitní Analyst dispatch.
+Automated role-bound run musí mít právě jednu explicitní canonical role:
 
-Teprve potom orchestrace odvodí lifecycle/role/next action od nejdříve dotčeného bodu. Delayed event pro starý Request ID nebo změněný binding musí skončit bez role dispatch/write akce.
+- A/D/R/P assignment vytváří H nebo O a musí obsahovat work item + purpose + relevant candidate/context + state fingerprint,
+- H step je durable Human queue/authority boundary, ne automaticky AI run,
+- chybějící/ambiguous assignment = blocker/configuration error,
+- role runner si nesmí roli odvodit z eventu/statusu,
+- explicit reassignment nesmí obejít independence,
+- D author ≠ independent R.
 
-Duplicate `HUMAN_INPUT_RESOLVED` smí opakovat levnou state evaluation, ale nesmí duplicitně provést transition/action ani spustit semanticky totožný drahý role run.
+Least privilege:
 
-V `multi-repo` žije generic request/resolution s autoritativním work itemem v control/governance repository. Implementation runner může event pozorovat, ale před pokračováním musí znovu načíst control-repository state a repo-qualified local evidence uvedenou v bindingu.
+- A nepotřebuje production code/publication write,
+- D nepotřebuje release/publish credentials,
+- R nepotřebuje commitovat opravy do D candidate,
+- P dostává privileged publication/deployment credentials pouze pro explicit P run,
+- O dostává jen control-plane permissions nutné pro reconstruction, guarded state writes a dispatch; product/review/release approval z jeho tokenu nevzniká.
 
-Configured release authorization zůstává samostatnou event/gate rodinou `RELEASE_AUTH_*`; generic Human-input eventy ji nenahrazují ani neudělují.
+## 5. Write/transition idempotence a concurrency
 
-## 4. Human queues
+Automation musí chránit všechny deterministic writes například pomocí:
 
-Asistentka pracuje nad views odvozenými z durable state:
+- per-work-item/candidate concurrency group,
+- CAS lifecycle/candidate/request-binding checks,
+- lock/run markeru,
+- duplicate-artifact prevention,
+- retry-safe steps,
+- durable webhook delivery/run receipts.
 
-- všechny `PENDING` generic Human Input Requests,
-- intake needing Human clarification,
-- product/governance decision queue,
-- release authorization queue.
+Concurrency je execution-pressure/serialization primitive, ne business state machine. O vždy znovu ověřuje current state; authority nesmí záviset na assumed dispatch/run order.
 
-Asistentka durable transportuje explicitní Human answer/authorization do správného request/gate. Z odpovědi sama neodvozuje nový Scope/AC/Ready contract a sama nevybírá next role; změnu state předá canonical orchestration function.
+## 6. Pre-dispatch run eligibility / run idempotence
 
-Specializované views mohou ukazovat stejný underlying durable stav vhodným způsobem; nevytvářej separátní ručně udržovaný backlog.
+Před expensive A/D/R/P role runem O sestaví provider-neutral semantic fingerprint z relevantních durable inputs, typicky:
 
-## 5. Explicit active role a least privilege
+- work-item identity + lifecycle/terminal state,
+- role + assignment purpose,
+- contract/AC/parent-input identity,
+- candidate/head/composite identity + membership,
+- required check/R evidence + gates,
+- relevant H request/finding/blocker bindings,
+- target/environment/base only pokud je normativně relevantní.
 
-Canonical role je authority/function context, ne nutně samostatná provider session. Automated dispatch však musí každému role-bound runu předat právě jednu explicitní active role.
+Po splnění ostatních guards je run eligible právě tehdy, když:
 
-- role assignment pochází z durable orchestration assignmentu nebo explicitního Human assignmentu,
-- runner nesmí roli inferovat z eventu, work-item statusu nebo očekávaného next stepu,
-- chybějící/ambiguous role assignment je durable configuration/blocker condition; provider run se nespustí,
-- role transition ve stejné technické/modelové session musí být explicitní a sekvenční,
-- mandatory independence/least privilege přebíjí session reuse.
+1. **first run** — pro stejnou authority/purpose neexistuje applicable completed run, nebo
+2. **changed state** — od posledního applicable completed runu se materialně změnil relevantní fingerprint, nebo
+3. **objective retry/progress** — durable policy opravňuje opakování z objektivního důvodu.
 
-Technická oprávnění mají co nejvíce odpovídat aktivní roli:
+Jinak O run potlačí **před** provider/model invocation. Fingerprint musí zahrnout všechny normativně relevantní inputs; suppression nenahrazuje fresh runner guard, CAS, exact-candidate binding ani mandatory re-review.
 
-- Analyst/Asistentka nepotřebují produkční code write,
-- Reviewer nepotřebuje commitovat opravu do autorovy branch,
-- Integrator nepotřebuje produktovou decision/release-approval authority,
-- deployment credentials se zpřístupňují pouze kroku, který je skutečně potřebuje.
+## 7. Parent Intent, Done a Stopped
 
-Human-only credential/access request nesmí vést ke kopírování secret values do Issue; durable request uchovává pouze bezpečný požadavek a completion evidence.
+O může bez AI role runu mechanicky:
 
-## 6. Write/transition idempotence a concurrency
+- re-evaluovat Parent Intent completion po relevantním child/parent state change,
+- CAS-zapsat executable `Done`, pokud všechny declared success conditions objektivně platí,
+- provést deterministic automatic supersession pouze při splnění existing lossless-mapping + policy podmínek.
 
-Automatizace musí zabránit dvojímu provedení stejného přechodu nebo write akce.
+`Stopped` je terminal guard. Delayed/replayed event, stale approval ani removed blocker jej neotevírá. Reopen musí být nejdřív explicitně H-authorized a durable; teprve potom O rekonstruuje next step.
 
-Použij podle platformy například:
+## 8. Multi-repo composite candidate je O state
 
-- per-Issue/per-PR concurrency group,
-- lock/run marker,
-- compare-and-set kontrolu lifecycle/candidate identity,
-- compare-and-set kontrolu Human Request ID/status/context binding,
-- deduplikaci follow-up artefaktů,
-- deduplikaci automated child creation a parent↔child linkage,
-- retry-safe kroky.
+Jakmile více implementation repositories tvoří jeden product candidate, O mechanicky udržuje v authoritative control repository:
 
-Automation nesmí pokračovat přes transition guard, dokud relevantní request zůstává `PENDING`. `STALE` request se nesmí automaticky změnit zpět na resolved/current jen proto, že dorazil opožděný event nebo odpověď.
+- participating membership,
+- repo-qualified immutable candidate map,
+- reverse PR/change links,
+- odkazy na current local D/R/check evidence,
+- dependent gate/release bindings.
 
-Před vytvořením nebo spuštěním executable child orchestrace znovu načte authoritative Parent Intent + child state, ověří durable parent relationship a inherited authorization inputs. Retry decomposition nesmí vytvořit duplicate child pro stejný plánovaný scope unit.
+Při každé relevantní local změně O binding fresh rekonstruuje/CAS-updatuje a invaliduje pouze dependent product-level conclusions podle existing rules. O nesmí evidence waive ani grantovat approval.
 
-Pokud se Parent Intent změní, orchestrace nepovažuje všechny children mechanicky za stale. Identifikuje affected children podle jejich durable parent-input dependencies a použije earliest-affected-point pravidla z `delivery-cycle.md`. Delayed nebo již queued run affected child se zastaví, pokud current authoritative state už jeho předchozí `Ready`/next action nepovoluje; unaffected children mohou pokračovat.
+Po current R/control gates a případné exact-bound H release authorization O explicitně dispatchne P s current composite candidate + publication plan.
 
-## 7. Pre-dispatch run eligibility / run idempotence
+## 9. P publication safety
 
-Write-level idempotence nestačí: orchestrace musí zabránit i zbytečnému vytvoření drahého Analyst/Developer/Reviewer/Tester/Integrator role runu, pokud se pro něj relevantní semantic state nezměnil.
+P před privileged write bezprostředně revaliduje:
 
-Před provider/model dispatch vytvoří nebo rekonstruuje **semantic state fingerprint** pro konkrétní zamýšlenou active role. Fingerprint je provider-neutral koncept a obsahuje pouze relevantní durable vstupy, typicky:
-
-- authoritative work-item identity + lifecycle/terminal state,
-- active role / assignment purpose,
-- relevantní contract/requirements/AC/parent-input version nebo content identity,
-- candidate/head/composite-candidate identity a repository membership,
-- required check/test/review evidence a gate statuses,
-- relevantní Human Request/finding/blocker IDs + statuses/bindings,
-- target/environment/base state pouze pokud je pro daný run normativně relevantní.
-
-Projekt nemusí používat cryptographic hash; může použít durable version tuple, content IDs nebo jiný deterministický ekvivalent. Project Profile/provider adapter musí určit, jak se fingerprint persistuje/porovnává.
-
-### Eligibility rule
-
-Po splnění current lifecycle/dependency/gate/terminal/active-role guardů je nový role run eligible právě tehdy, když platí alespoň jedna z těchto podmínek:
-
-1. **First run:** pro stejnou authority/purpose ještě neexistuje žádný applicable completed run; aktuální již autorizovaný run se proto nesmí potlačit jen kvůli absenci předchozího fingerprintu,
-2. **Changed state:** applicable completed run existuje a od něj došlo k material change relevantního fingerprintu, **nebo**
-3. **Objective retry/progress:** existuje durable objektivně validní progress reason podle `delivery-cycle.md`, který opakování opravňuje i bez změny contract/candidate (např. Project Profile-authorized retry transient external operation s novým execution contextem).
-
-First-run eligibility není bypass ostatních guardů: terminal `Stopped`, chybějící/ambiguous active role, nesplněný lifecycle/dependency/gate nebo jiný blocking stav run stále zakazují.
-
-Pokud applicable completed run existuje a neplatí ani changed-state ani objective retry/progress podmínka, orchestrace run potlačí **před** provider/model invocation. Duplicate/replayed event může skončit levnou state/fingerprint evaluací bez token/context churn.
-
-Run fingerprint guard nesmí potlačit běh jen proto, že se změna odehrála mimo zvolený fingerprint; proto fingerprint musí zahrnovat všechny a pouze normativně relevantní inputs dané role/purpose.
-
-Pre-dispatch suppression nenahrazuje:
-
-- fresh state reconstruction uvnitř runneru před write,
-- CAS/concurrency guards,
-- exact-candidate binding,
-- mandatory re-review tam, kde se skutečně změnil review input.
-
-## 8. Completion roll-up a terminal guards
-
-### Parent Intent / Done
-
-Když se změní completion-relevant child/parent state, orchestrace může provést levnou Parent Intent re-evaluation bez spuštění samostatného AI role runu:
-
-1. re-read parent + current child set + completion evidence,
-2. ověř current binding a že parent není `Stopped`,
-3. mechanicky vyhodnoť durable overall completion condition,
-4. CAS-zapiš `Done` pouze pokud condition objektivně platí,
-5. pokud je nutný domain judgment, dispatchni explicitní roli/Human input místo jeho vymýšlení.
-
-Stejný pattern platí pro final executable `Done`: role/runner produkuje required evidence, orchestrace provádí mechanický guarded lifecycle close-out.
-
-### Stopped
-
-Jakmile authoritative work item říká `Stopped`, orchestrace musí před jakýmkoli role dispatch/retry ověřit explicitní authorized reopen/current-state transition. Delayed/replayed events, staré approvals/resolutions ani změna externího stavu nesmějí terminal guard obejít.
-
-Deterministic automatic `SUPERSEDED_OR_OBSOLETE` transition je dovolen pouze pokud authoritative replacement/current work item už existuje a Project Profile/project policy explicitně automatic supersession dovoluje; jinak automation pouze připraví evidence/Human decision path.
-
-## 9. Multi-repo composite candidate automation
-
-Jakmile current work item vyžaduje více participating implementation repositories, orchestrace může explicitně dispatchnout Integrator function už před product-level approval, aby mechanicky udržovala product-level composite binding v control repository.
-
-Integrator automation:
-
-- CAS-agreguje repo-qualified immutable candidate identities/membership,
-- udržuje reverse links a odkazy na local evidence,
-- při local change binding znovu sestaví a revaliduje,
-- neposouvá product-level approval/release gate, pokud local evidence chybí/selhala,
-- žádnou approval/product authority sama nezískává.
-
-Local implementation/review jobs zůstávají v příslušných implementation repositories.
-
-## 10. Role isolation
-
-Automatické chaining nesmí zrušit nezávislost control role. Implementační a independent review run musí být různé logical working instances; Reviewer nesmí dostávat skrytý reasoning autora jako náhradu za durable artefakty.
-
-Stejně tak deterministic resume nesmí záviset na zachování skrytého reasoning/session stavu role, která Human request vytvořila.
-
-Safe sequential reuse jedné session pro kompatibilní ne-independent role je dovoleno pouze s explicitní role transition a se změnou effective least-privilege contextu tam, kde je to technicky možné.
-
-## 11. Durable failure a non-convergence
-
-Failure, který zastaví tok, zanechá durable blocker. Nestačí transient CI log.
-
-Blocker má obsahovat zdroj práce, fázi/runner, bezpečný run link/ID, stručný stav, autorizovaný next step a zda další attempt má objective progress/retry reason. Nekopírují se secrets ani nepotřebný raw log dump.
-
-Pokud next step vyžaduje Human input, blocker vytvoří nebo odkáže přesný Human Input Request místo očekávání odpovědi pouze v chatu.
-
-Semanticky identický blocker/finding/request se při retry znovu nevytváří jen s novým ID; existing durable artifact se aktualizuje/resolvuje/stale označí.
-
-Pokud current loop nemá objective progress a žádný další already-authorized recovery/corrective path, orchestrace další identický drahý run potlačí a vytvoří/routuje durable non-convergence escalation podle `delivery-cycle.md`. Human-authorized abandonment používá existing `Stopped`, nikoli druhý termination mechanismus.
-
-## 12. Release authorization safety
-
-Automation smí požádat o approval a následně ověřit jeho status. Nesmí approval udělit.
-
-Před integrací ověří:
-
-- candidate/composite-candidate identity,
+- exact candidate/composite membership,
 - target boundary/boundaries,
-- required gate validity,
-- že approval není stale,
-- že od approval nenastala změna, kterou Project Profile považuje za invalidující.
+- required current R/check gates,
+- current H release authorization, pokud je configured,
+- relevant target/base/environment assumptions.
 
-U `multi-repo` se tato kontrola provádí nad current composite candidate udržovaným Integrator function, ne nad jednotlivými PRs izolovaně.
+P provádí pouze Project-Profile-defined merge/promotion/tag/release/deploy operations. Candidate nesmí substituovat. Publikační retry/recovery smí dělat jen v pre-authorized rozsahu.
 
-Generic Human response ponechá release approval platný jen tehdy, pokud nezměnila jeho bound candidate/target nebo jiný závislý input/assumption; jinak se použijí normální `RELEASE_AUTH_STALE` semantics.
+P zapisuje exact published identities, publication/deployment state a configured deterministic post-publication checks. Pokud je required independent post-publication judgment, completion event probudí O a ten explicitně dispatchne R. Final Done zapisuje mechanicky O.
 
-## 13. Provider adapters
+## 10. Failure a non-convergence
 
-Claude/Codex/IDE/runner-specific instrukce jsou adaptér. Smějí překládat obecné role, explicit role assignments, eventy a semantic fingerprint do konkrétních nástrojů, ale nesmí měnit authority, scope, lifecycle, terminal guards, Human-input guards nebo control gates.
+Blocking failure musí zanechat durable evidence se source work/candidate, phase/runner, safe run/delivery ID, stručnou příčinou, authorized next step a objective retry/progress reason.
 
-## 14. Project Profile — povinná automatizační konfigurace
+Semanticky identical blocker/finding/request se nepřepisuje pod novou identitou kvůli retry. Pokud není objective progress ani authorized recovery path, O další identical expensive run suppressne a routuje existing authority. H-authorized abandonment používá existing `Stopped`.
+
+## 11. GitHub implementation facts — current 2026-09-18
+
+Tato část je implementation guidance nad normative O contractem; GitHub capabilities se mohou vyvíjet.
+
+### Native Actions/event surface
+GitHub Actions nabízí široké repository events pro Issues/comments, PR/reviews, push/release/deployment/check/workflow events. Ne každý webhook event je Actions trigger. Event slouží jako wake-up signal; O stále reconstructuje state.
+
+### Explicit workflow starts a `GITHUB_TOKEN` recursion
+Reference role chaining nesmí záviset na implicitní event recursion. `workflow_dispatch` a `repository_dispatch` jsou explicitní start mechanisms. Events vyvolané repository `GITHUB_TOKEN` obecně nespouštějí další workflow runs; current GitHub má úzkou approval-gated výjimku pro `pull_request` activity `opened`/`synchronize`/`reopened` po PR create/update pomocí `GITHUB_TOKEN`. Tato výjimka není reference chaining mechanismus.
+
+### `workflow_run` a reusable workflows
+`workflow_run` není unbounded agent bus; GitHub omezuje chaining a privileged downstream workflow po untrusted upstream vyžaduje zvláštní security discipline. Reusable workflows jsou vhodné pro deterministic composition, ne durable authority bus.
+
+### Current concurrency semantics
+GitHub concurrency je guard, ne O:
+- default `queue: single` drží nejvýše jednoho pending membera a nově queued member předchozí pending nahradí/cancelne,
+- optional `queue: max` dovoluje až 100 pending jobs/runs,
+- `queue: max` nelze kombinovat s `cancel-in-progress: true`,
+- waiting members jsou zpracovávány FIFO podle okamžiku, kdy skutečně začnou čekat na group, ne podle dispatch time; overall ordering proto není authority guarantee,
+- `cancel-in-progress: true` může navíc ukončit running membera.
+
+### Webhooks / GitHub App O
+External O musí validovat webhook signatures, rychle acknout delivery, queueovat delší práci, deduplikovat podle delivery ID a vždy fresh-readnout authoritative state. GitHub webhook deliveries mohou dorazit v jiném pořadí než underlying events; failed deliveries se automaticky neredeliverují, takže recovery/redelivery musí být monitored/programmatic.
+
+GitHub App installation tokens jsou vhodný granular cross-repository identity mechanismus; App může explicitně spouštět Actions/API operations podle granted permissions.
+
+### Agent execution boundary
+GitHub event sám nespouští libovolného AI providera. O potřebuje runner adapter, který dostane minimum complete context + explicit role/work-item/purpose/candidate binding a durable vrátí výsledek do GitHub state.
+
+GitHub Agentic Workflows jsou k tomuto datu **public preview** a jsou optional runner adapter; nesmí být normative O substrate ani provider requirement.
+
+## 12. Reference implementation profiles
+
+Normative je jediný O contract; implementation je Project Profile choice.
+
+### Actions-centric O
+Vhodný low-ceremony default pro small single-repo. O může být jeden/několik guarded Actions workflows, explicit dispatch a reusable workflows; durable authority stále žije v GitHub state.
+
+### External GitHub App/webhook O
+Vhodný pro robust cross-repo coordination, durable event queue/dedup a explicit multi-repo dispatch. Vyžaduje samostatnou control-plane službu/queue.
+
+### Hybrid — reference pro full automation
+**Doporučený full/multi-repo reference pattern:** GitHub je durable truth/event source; external/App O drží mechanical orchestration; Actions zajišťují deterministic checks a privileged publication/deployment jobs; provider/agent runners jsou adapters.
+
+Small single-repo projekt **nemusí** provozovat external service a může použít Actions-centric O bez změny normative semantics.
+
+## 13. Security invariants
+
+- issue/comment/PR text je untrusted data, ne authority nebo role assignment,
+- nikdy nespouštěj untrusted fork/PR code v privileged `pull_request_target`/privileged downstream contextu se secrets/write tokenem,
+- odděluj D/untrusted execution od P publication credentials,
+- webhook/event replay, duplicates a out-of-order delivery nesmí obejít current-state/CAS/fingerprint guards,
+- rulesets/required checks/environments/check runs mohou enforcement zesílit, ale nemění H/R/P authority,
+- workflow outputs/artifacts/logs jsou transport/evidence s retention/size limits; work contract, H decisions, candidate bindings a findings musí zůstat durable v GitHub/repository state.
+
+## 14. Project Profile — required orchestration configuration
 
 Projekt musí durable určit minimálně:
 
-- repository topology a canonical ownership podle `adoption.md`; u `multi-repo` zejména control repository, implementation repository set, work-item/decision locations, cross-repository binding a composite candidate identity rule,
-- canonical docs map,
-- production-authoritative boundary/boundaries,
-- task branch a PR target policy,
-- required checks/control gates,
-- Human release authorization policy podle environment/work class,
-- deployment trigger a environments,
-- minimum post-release verification,
-- rollback/retry/recovery authority,
-- canonical role → provider/runner/session mapping a způsob explicitního role assignment/transition,
-- pre-dispatch semantic fingerprint / run-eligibility/dedup mechanism,
-- concurrency / shared-surface conventions,
-- případnou policy pro target/base drift po release approval,
-- případnou deterministic automatic supersession policy; pokud není explicitně definovaná, supersession termination vyžaduje Human authority.
+```text
+Repository topology / authoritative control plane:
+Human authority identity / allowed Human principals:
+Asistentka / Human-interface implementation:
+Orchestrator implementation: Actions-centric | external GitHub App/service | hybrid | equivalent
+O event subscriptions / wake-up mechanism:
+O durable dedup/CAS/fingerprint mechanism:
+A runner/provider/session mapping:
+D runner/provider/session mapping:
+R runner/provider/session mapping:
+P runner/tooling mapping:
+Explicit role assignment encoding/binding:
+Independent-R enforcement mechanism:
+Role completion → O callback/dispatch mechanism:
+Cross-repo event/binding mechanism, if multi-repo:
+Publication boundary operations owned by P:
+P credentials/secrets boundary:
+Human release-authorization representation:
+Post-publication verification contract:
+Optional independent post-publication R gate:
+Retry / rollback / recovery authority:
+Webhook/event retry/redelivery policy, if external O:
+```
 
-Generic Human-input subflow ani adaptive shaping/decomposition nepotřebují vlastní Project Profile queue/location: používají autoritativní work item/control plane a native GitHub relationships už určené repository topology.
+Dále zůstávají v platnosti repository topology, semantic authority/effective-state, branch/target, concurrency, target-drift, automatic supersession a další fields z `adoption.md`.
+
+Provider-specific adapter smí překládat role assignments/eventy/fingerprint do konkrétních nástrojů, ale nesmí měnit authority, scope, lifecycle, terminal/H-input/release guards.

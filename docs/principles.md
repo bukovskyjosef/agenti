@@ -27,20 +27,28 @@ Když je effective fact materiální pro aktuální work contract nebo gate, př
 
 Toto pravidlo nezavádí povinnou runtime kontrolu pro každý task. Projekty s deterministickou Git→effective-state equivalence mohou tento vztah deklarovat jednou a následně jej používat jako autoritativní pravidlo.
 
-## 2. Human/Product Owner drží produktovou autoritu
+## 2. H = Human drží produktovou autoritu
 
-Agent smí dělat technická rozhodnutí uvnitř již autorizovaného scope. Nesmí sám rozhodnout:
+H je canonical authority role pro produkt, scope, priority a governance. Agent smí dělat technická rozhodnutí uvnitř již autorizovaného scope, ale nesmí sám rozhodnout:
 
 - nové produktové chování,
 - materiální změnu scope,
-- governance změnu,
+- governance změnu nebo one-off výjimku, kterou governance sama nepovoluje,
 - vědomé přijetí významného trade-offu/rizika,
 - release authorization tam, kde ji Project Profile vyžaduje,
-- nedeterministické zrušení/opuštění product intentu, scope nebo candidate.
+- nedeterministické zrušení/opuštění nebo reopen product intentu, scope nebo candidate.
 
-Absence odpovědi není rozhodnutí.
+Absence odpovědi není rozhodnutí. H nemá být rutinní scheduler ani message bus mezi A/D/R/P.
 
-Specializovaná role smí durable zaznamenat evidence a doporučit ukončení práce. `Stopped` smí vzniknout bez nového Human rozhodnutí pouze v deterministickém `SUPERSEDED` případě, kdy authoritative replacement/current work item už durable existuje, lossless source→replacement mapping podle `work-item.md` je rekonstruovatelný a Project Profile/project policy takový automatic supersession explicitně dovoluje.
+Specializovaná role smí durable zaznamenat evidence a doporučit ukončení práce. `Stopped` smí vzniknout bez nového H rozhodnutí pouze v deterministickém `SUPERSEDED` případě, kdy authoritative replacement/current work item už durable existuje, lossless source→replacement mapping podle `work-item.md` je rekonstruovatelný a Project Profile/project policy takový automatic supersession explicitně dovoluje.
+
+### Human conflict / override invariant
+
+> **Human override changes authorized durable state; it is not a license for an agent to ignore durable state.**
+
+Pokud H instrukce koliduje s current work contractem, required gate, active-role boundary nebo governing protocol, aktivní role konfliktní akci neprovede potichu. Identifikuje konflikt a compliant path, klasifikuje požadovanou změnu podle `work-item.md`, zajistí explicitní H resolution tam, kde je potřeba, a před pokračováním ji nechá durably zapsat proti správnému work/policy/candidate bindingu.
+
+O následně znovu rekonstruuje authoritative state a určí earliest valid next transition. Handoff ani private-chat potvrzení samo nepřepisuje repository state. Pokud current governance nepovoluje task-local výjimku, H musí nejdřív změnit governing policy/standard příslušnou durable cestou; agent nesmí dosáhnout „conformance“ prostým porušením invarianty.
 
 ## 3. Human input je podmíněný durable interrupt
 
@@ -73,25 +81,41 @@ Implementace je realizace dostatečně konkrétního autorizovaného upstream pr
 
 Developer nadále smí dělat běžná technická rozhodnutí uvnitř autorizovaného semantic envelope, pokud tím nemění product/domain semantics nebo observable behavior.
 
-## 5. Role jsou authority contexts, ne automaticky sessions
+## 5. Canonical role jsou H/A/D/R/P authority contexts
 
-Canonical role definuje kompetenci/autoritu pro právě vykonávanou práci. Neznamená automaticky samostatný model, proces nebo session.
+Publikovaný delivery model používá právě pět canonical authority/delivery rolí:
 
-Každá role-bound session/run však musí mít v každém okamžiku právě jednu **explicitně aktivní roli**:
+- **H = Human**
+- **A = Analyst**
+- **D = Developer**
+- **R = Reviewer**
+- **P = Publisher**
 
-- role activation/change vzniká pouze explicitním Human assignmentem nebo durable orchestration assignmentem,
-- session nesmí roli odvodit z Issue title, handoffu, repository state ani z toho, že další krok působí zřejmě,
-- session nesmí tiše přejít na jinou roli nebo vykonat out-of-role práci,
-- jedna session smí sekvenčně vykonávat více kompatibilních rolí pouze přes explicitní role transitions a pouze pokud tím není porušena independence/least-privilege hranice,
-- chybějící nebo nejednoznačná role je blocker/configuration error, nikoli důvod k domýšlení defaultu.
+Asistentka a **O = Orchestrator** jsou systémové funkce, nikoli role.
 
-Autor změny a její nezávislý Reviewer musí být různé logické pracovní instance. Reviewer + Tester lze konsolidovat pouze tam, kde to work contract/Project Profile explicitně dovoluje.
+Canonical role definuje kompetenci/autoritu pro právě vykonávanou práci. Neznamená automaticky samostatný model, proces nebo session. Každá role-bound session/run však musí mít v každém okamžiku právě jednu explicitně aktivní roli:
 
-## 6. Role spolupracují, nekonkurují
+- role activation/change vzniká pouze explicitním H assignmentem nebo durable O assignmentem,
+- session nesmí roli odvodit z Issue title, handoffu, repository state ani z očekávaného next stepu,
+- session nesmí tiše přejít na jinou roli nebo kombinovat současně více role authorities,
+- jedna session smí sekvenčně vykonávat kompatibilní role pouze přes explicitní reassignment a pouze pokud tím není porušena independence/least-privilege hranice,
+- chybějící nebo nejednoznačná role je blocker/configuration error.
 
-Výchozí model není několik agentů řešících totéž. Každá fáze má vlastní odpovědnost a kontrolní role práci autora nepřebírá.
+Autor exact candidate nesmí být jeho independent R. Required independent behavioral verification je R activity/run a zachovává stejnou independence boundary.
 
-Asistentka je Human-facing intake/queue/transport function. Analyst vlastní analytical derivation/shaping/mutation executable work contractu. Orchestration function je jediný canonical dispatcher dalšího již autorizovaného kroku. Integrator vlastní product-level composite-candidate control-plane binding v `multi-repo`, jakmile více repo-local candidates tvoří jeden product candidate.
+## 6. Role a systémové funkce spolupracují, nekonkurují
+
+Výchozí model není několik autorit řešících totéž.
+
+- **Asistentka** je Human-facing intake/queue/transport interface. Zapisuje explicitní H stav, ale neodvozuje Scope/AC/Ready a nevybírá next role.
+- **A** vlastní analytical derivation/shaping/mutation executable work contractu.
+- **D** realizuje current Ready contract a vlastní author-side validation.
+- deterministické testy/checks jsou control gates, nikoli role.
+- **R** vlastní nezávislé review a případnou required independent behavioral verification.
+- **O** je jediný canonical dispatcher a mechanický control plane. Rekonstruuje current durable state, udržuje multi-repo composite binding, guarduje transitions a dispatchuje právě jeden již autorizovaný H/A/D/R/P step.
+- **P** vykonává finální již autorizované publication/promotion/deployment operations a zapisuje publication evidence.
+
+O nesmí získat product, review ani release-approval authority. P nesmí grantovat release authorization ani opravovat implementaci během publish.
 
 ## 7. Jedna aktuální pravda a semantic authority
 
@@ -119,16 +143,17 @@ Standard nepředepisuje pevnou taxonomy názvů, directory tree, lokální autho
 
 Agent načítá minimum **úplného** kontextu potřebného pro aktivní roli a úkol. Tokenová úspora nesmí znamenat vynechání relevantního kontraktu; zároveň se do tasků nekopíruje celý repozitář.
 
-Nový drahý role run se nespouští jen proto, že dorazil event. Pokud relevantní semantic work state od posledního applicable completed run zůstává materiálně stejný a neexistuje jiný objektivně platný progress reason, orchestrace run potlačí podle `automation.md`.
+Nový drahý role run se nespouští jen proto, že dorazil event. Pokud relevantní semantic work state od posledního applicable completed run zůstává materiálně stejný a neexistuje jiný objektivně platný progress reason, O run potlačí podle `automation.md`.
 
 ## 9. Automatizace nerozšiřuje autoritu
 
 Workflow, API token, CLI nebo AI provider jsou mechanismy. Technická možnost něco zapsat nebo mergnout není oprávnění to udělat.
 
-Každý automatizovaný krok musí být:
+Každý automatizovaný krok řízený O musí být:
 
 - odvoditelný z durable state,
-- povolený explicitně aktivní rolí,
+- povolený explicitně aktivní H/A/D/R/P rolí nebo mechanickou O authority,
+- spuštěný pouze po O current-state reconstruction; event sám není autorita,
 - před dispatch způsobilý podle run-eligibility/dedup pravidel,
 - idempotentní nebo chráněný proti duplicitě na write/transition úrovni,
 - bezpečně zastavitelný na unresolved Human input nebo jiném Human-owned gate,

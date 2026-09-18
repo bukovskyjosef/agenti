@@ -4,13 +4,13 @@ Cílem review je ověřit správnost změny proti autorizovanému work contractu
 
 ## 1. Nezávislost
 
-Autor změny nesmí být její nezávislý Reviewer. Reviewer pracuje z Issue, skutečného diffu/commitů, kanonické dokumentace a check/test evidence.
+Autor změny nesmí být její nezávislý Reviewer. R pracuje z Issue, skutečného diffu/commitů, kanonické dokumentace a check/test evidence.
 
-Canonical role je authority context, ne automaticky samostatná session, ale mandatory review independence přebíjí možnost role consolidation: logical instance, která kontrolovanou změnu vytvořila, nesmí být jejím independent Reviewerem ani po pozdějším role reassignmentu.
+R je canonical independent control role. Role je authority context, ne automaticky samostatná session, ale mandatory review independence přebíjí session reuse: logical instance, která kontrolovaný exact candidate vytvořila, nesmí být jeho independent R ani po pozdějším reassignmentu.
 
-Reviewer run musí mít explicitně aktivní roli `Reviewer`; nesmí si ji odvodit z PR/Issue state ani se z jiné role sám přepnout.
+R run musí mít explicitně aktivní roli `R`; nesmí si ji odvodit z PR/Issue state ani se z jiné role sám přepnout.
 
-## 2. Co Reviewer kontroluje
+## 2. Co R kontroluje
 
 1. Scope — změna řeší právě autorizovaný problém.
 2. Requirements — odpovídá kanonickým pravidlům a decisions.
@@ -22,14 +22,15 @@ Reviewer run musí mít explicitně aktivní roli `Reviewer`; nesmí si ji odvod
 8. Validation — test/check evidence podporuje tvrzení.
 9. Documentation — durable truth byla aktualizována tam, kde se změnila.
 10. Dependencies/concurrency — byla respektována koordinace.
+11. Independent behavioral verification — pokud work contract vyžaduje nezávislý behavioral judgment, R jej provede/ověří proti exact candidate; deterministic test suite sama nemění role authority.
 
-Reviewer používá semantic authority/currentness informace z Project Profile/canonical map podle `principles.md` a `adoption.md`. Authority je fact-domain-scoped: effective runtime evidence může rozhodovat fakt o skutečně nasazeném/configured stavu, ale sama tím nezískává product/domain authority pro autorizované chování.
+R používá semantic authority/currentness informace z Project Profile/canonical map podle `principles.md` a `adoption.md`. Authority je fact-domain-scoped: effective runtime evidence může rozhodovat fakt o skutečně nasazeném/configured stavu, ale sama tím nezískává product/domain authority pro autorizované chování.
 
 Historical/snapshot/superseded artifact se nepoužije jako current authoritative source jen proto, že obsahuje relevantní text. Pokud current authority není zjistitelná nebo je upstream product/domain contract příliš neurčitý k posouzení fidelity bez vymýšlení product meaning, review zaznamená odpovídající blocker/finding místo normalizace podle current code/configuration.
 
-Effective-state inspection je požadována pouze pokud je effective fact materiální pro aktuální review contract/gate. Pokud Reviewer nemá k deklarovanému effective source autorizovaný přístup, přesně zaznamená unverified boundary/blocker a nesmí tvrdit equivalence z declared/design state.
+Effective-state inspection je požadována pouze pokud je effective fact materiální pro aktuální review contract/gate. Pokud R nemá k deklarovanému effective source autorizovaný přístup, přesně zaznamená unverified boundary/blocker a nesmí tvrdit equivalence z declared/design state.
 
-Pokud Reviewer zjistí, že bez Human input nelze review bezpečně dokončit, použije durable Human Input Request podle `work-item.md`; nevytváří ad-hoc chatovou eskalaci.
+Pokud R zjistí, že bez Human input nelze review bezpečně dokončit, použije durable Human Input Request podle `work-item.md`; nevytváří ad-hoc chatovou eskalaci.
 
 ## 3. Finding má dvě osy
 
@@ -54,20 +55,20 @@ Technický/executable artifact, který bez autority zavádí další, přísněj
 #### `DECISION_REQUIRED`
 Riziko nebo mezera vyžaduje nový produktový/governance/scope/architecture kontrakt.
 
-Reviewer popíše evidence a potřebnou autoritu; nesmí sám vybrat variantu jako schválenou.
+R popíše evidence a potřebnou autoritu; nesmí sám vybrat variantu jako schválenou.
 
-Blocking `DECISION_REQUIRED` vytvoří nebo odkáže `PENDING` Human Input Request typu `DECISION` v autoritativním work itemu. Finding disposition určuje, **proč** je potřeba Human authority; generic request zajišťuje durable otázku, guard a resume. Human response sama neobnoví review závěr — orchestrace znovu vyhodnotí current state a explicitně dispatchne Reviewer/Analyst/other next role pouze podle nejdříve dotčeného bodu.
+Blocking `DECISION_REQUIRED` vytvoří nebo odkáže `PENDING` Human Input Request typu `DECISION` v autoritativním work itemu. Finding disposition určuje, **proč** je potřeba Human authority; generic request zajišťuje durable otázku, guard a resume. Human response sama neobnoví review závěr — O znovu vyhodnotí current state a explicitně dispatchne R/Analyst/other next role pouze podle nejdříve dotčeného bodu.
 
 Blocking factual clarification, která není novou Human-owned product/governance/scope volbou, může použít request typu `CLARIFICATION` bez umělého překlasifikování na `DECISION_REQUIRED`.
 
 #### `RECOMMENDATION`
 Volitelné zlepšení nad současný kontrakt. Nezablokuje current work jen proto, že by bylo „lepší“.
 
-Developer ji nesmí oportunisticky implementovat během corrective loopu bez nové autority. Recommendation sama není důvod pro blocking Human Input Request.
+D ji nesmí oportunisticky implementovat během corrective loopu bez nové autority. Recommendation sama není důvod pro blocking Human Input Request.
 
 ## 4. Celkový outcome
 
-Reviewer vydá právě jeden výsledek:
+R vydá právě jeden výsledek:
 
 - `APPROVED`,
 - `CHANGES_REQUIRED`,
@@ -82,16 +83,16 @@ Pokud je review dočasně blokované generic `CLARIFICATION`/`HUMAN_ACTION` requ
 ```text
 DEFECT
   ↓
-Developer: smallest in-scope correction
+O routes from durable finding
+  ├─ implementation defect → D: smallest in-scope correction
+  └─ upstream contract deficiency → A: contract repair/shaping
   ↓
-required validation
+required validation / materially updated state
   ↓
-materially updated candidate/evidence/contract/blocker state
-  ↓
-independent re-review
+O → independent R re-review
 ```
 
-Reviewer sám neopravuje kontrolovaný kód.
+R sám neopravuje kontrolovaný kód.
 
 Další re-review run je oprávněný pouze pokud se od posledního applicable completed review materiálně změnil některý vstup, na kterém review závisí, nebo existuje jiný objektivně validní progress reason podle `delivery-cycle.md`.
 
@@ -111,9 +112,9 @@ Human response, která mění inputs tohoto loopu, vrací flow na nejdříve dot
 
 ### Non-convergence
 
-Pokud corrective loop opakovaně neprodukuje objective progress a není k dispozici další již autorizovaný corrective path, Reviewer/Developer nevytvářejí další identický ping-pong. Durable state zachytí non-convergence evidence a orchestrace routuje existující autoritu podle `delivery-cycle.md`.
+Pokud corrective loop opakovaně neprodukuje objective progress a není k dispozici další již autorizovaný corrective path, R/D nevytvářejí další identický ping-pong. Durable state zachytí non-convergence evidence a O routuje existující autoritu podle `delivery-cycle.md`.
 
-Human/Product Owner může rozhodnout o abandonment; pak se použije `Stopped` reason `NON_CONVERGENT_ABANDONED`. Reviewer sám takové intentional termination nerozhodne.
+Human může rozhodnout o abandonment; pak se použije `Stopped` reason `NON_CONVERGENT_ABANDONED`. R sám takové intentional termination nerozhodne.
 
 ## 6. New scope
 

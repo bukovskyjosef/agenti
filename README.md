@@ -17,51 +17,47 @@ Jeho účel je umožnit instrukci typu:
 ## Cílový delivery cyklus
 
 ```text
-Human intent
+H intent
   ↓
-Asistentka — intake / Human-facing transport
+Asistentka — durable intake / Human-facing transport
+  ↓ event/explicit call (trigger only)
+O — reconstruct current state + guard + explicit A assignment
   ↓
-Orchestration — reconstruct state + explicit role dispatch
-  ↓
-Analyst — Analysis / scope firewall
-  ├─ Human-owned input missing
-  │    → durable Human request → Asistentka ↔ Human
-  │    → orchestration reconstructs current state → earliest affected step
-  ├─ decomposition required
-  │    → non-executable Parent Intent + bounded executable child Issues
-  │    → normal Analysis/Ready flow per child
-  └─ one bounded executable/reviewable contract
-       → Ready
-            ↓
-        Developer
-            ↓
-        PR(s) + checks
-            ↓
-        multi-repo only: Integrator maintains current composite-candidate binding
-            ↓
-        Independent Reviewer / required control gates
-          ├─ DEFECT → corrective loop only after objective progress
-          ├─ DECISION_REQUIRED → durable Human-input flow
-          └─ APPROVED
-                ↓
-        Human release authorization, pokud ji projekt vyžaduje
-                ↓
-        Integrator — revalidate + integrate/promote exact candidate
-                ↓
-        production-authoritative boundary
-                ↓
-        automatic deployment + post-release verification
-                ↓
-               Done
+A — Analysis / shaping / scope firewall
+  ├─ H-owned input missing → durable H request → Asistentka ↔ H → O
+  ├─ decomposition → Parent Intent + bounded executable children
+  └─ Ready
+       ↓ O
+D — implementation + author validation → exact candidate/PR
+       ↓ checks/events wake O
+R — independent review / required behavioral verification
+  ├─ implementation defect → O → D
+  ├─ upstream contract deficiency → O → A
+  ├─ H-owned decision → Asistentka ↔ H → O
+  └─ APPROVED
+       ↓ O
+configured H release authorization?
+  ├─ no
+  └─ yes → exact candidate → H → durable GRANTED → O
+       ↓
+P — revalidate exact candidate + publish/promote/deploy + publication checks
+       ↓
+optional independent post-publication R gate
+       ↓
+O — mechanical completion evaluation → Done
 ```
 
-V libovolné fázi může recoverable blocker vést do `Blocked`. Durable rozhodnutí práci nepokračovat vede do non-success terminal `Stopped`; delayed event ani retry ji nesmí znovu spustit bez explicitního reopen transition.
+V `multi-repo` O mechanicky udržuje current composite-candidate binding z repo-qualified immutable candidate identities a current local evidence. P následně provádí pouze již autorizovaný coordinated publication plan; žádná samostatná integrační role neexistuje.
 
-Parent Intent se neimplementuje samostatně. Orchestrace mechanicky re-evaluuje jeho deklarovanou overall completion condition při změnách relevantních child/parent conditions a uzavře jej pouze tehdy, když je condition skutečně splněná.
+Recoverable blocker vede do `Blocked`. Durable rozhodnutí práci nepokračovat vede do terminal `Stopped`; delayed event ani retry ji nesmí znovu spustit bez explicitního reopen transition.
 
-Canonical role je authority/function context, ne automaticky nová modelová session. Session může po explicitním reassignmentu sekvenčně vykonávat kompatibilní role, ale vždy má právě jednu explicitně aktivní roli a nesmí porušit mandatory independence (zejména author ≠ independent Reviewer).
+Parent Intent se neimplementuje samostatně. O mechanicky re-evaluuje jeho deklarovanou overall completion condition při změnách relevantních child/parent conditions a uzavře jej pouze tehdy, když condition skutečně platí.
 
-Člověk je produktová a release autorita, ne ruční scheduler nebo message bus mezi agenty.
+Canonical authority/delivery role jsou právě **H/A/D/R/P**. Asistentka a O jsou systémové funkce. Role-bound session může po explicitním reassignmentu sekvenčně vykonávat kompatibilní role, ale vždy má právě jednu explicitně aktivní roli a nesmí porušit mandatory independence (zejména D/author ≠ independent R).
+
+H je produktová, governance a případně release-authorization autorita, ne ruční scheduler nebo message bus. GitHub event pouze probouzí O; autorita vzniká z current durable state, nikoli z eventu nebo handoff textu.
+
+Human override se nejdřív durably promítne do work contractu/governance/role assignmentu/release gate/stop-reopen recordu. Teprve potom O znovu rekonstruuje stav a určí další autorizovaný krok.
 
 ## Kde začít
 
@@ -74,7 +70,7 @@ Agent začíná v [`AGENTS.md`](AGENTS.md). Mapa standardu je v [`docs/README.md
 - [`docs/delivery-cycle.md`](docs/delivery-cycle.md) — end-to-end workflow, termination a release model,
 - [`docs/work-item.md`](docs/work-item.md) — pracovní kontrakt, Parent Intent, Definition of Ready a durable state,
 - [`docs/review.md`](docs/review.md) — nezávislé review a corrective loop,
-- [`docs/automation.md`](docs/automation.md) — event-driven orchestrace, run eligibility a bezpečnost automatizace,
+- [`docs/automation.md`](docs/automation.md) — event-driven O model, run eligibility a bezpečnost automatizace,
 - [`docs/adoption.md`](docs/adoption.md) — jak standard zavést do nového nebo existujícího projektu.
 
 ## Co je projektově konfigurovatelné
